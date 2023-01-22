@@ -1,0 +1,44 @@
+version: '3.7'
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=nutrix
+      - POSTGRES_PASSWORD=change-in-production
+      - POSTGRES_DB=nutrix
+    networks:
+      - nutrix
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6378:6379
+    volumes:
+      - redis_data:/data
+    networks:
+      - nutrix
+
+  nutrix:
+    image: nutrix:latest
+    build:
+      context: .
+    ports:
+      - ${HOST_PORT:-3000}:${PORT:-3000}
+    env_file:
+      - .env
+    networks:
+      - nutrix
+    
+volumes:
+  mongodb_data:
+  redis_data:
+  postgres:
+
+networks:
+  nutrix:
+    name: nutrix
+    driver: bridge

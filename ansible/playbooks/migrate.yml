@@ -1,0 +1,10 @@
+- hosts: all
+  vars:
+    deploy_folder: /home/ubuntu/nutrix/nutrix
+
+  tasks:
+    - name: Run yarn install
+      yarn: path='{{ deploy_folder }}'
+
+    - name: Run migration
+      shell: docker run --rm --network nutrix -v {{ deploy_folder }}:/app -w /app node:16 bash -c "yarn migration:run"
