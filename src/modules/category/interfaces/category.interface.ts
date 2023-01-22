@@ -1,5 +1,5 @@
 import type { BaseEntity } from '@/common/entities/base.entity';
-import type { ProductEntity } from '@/modules/product/entitites/product.entity';
+import type { Product } from '@/modules/product/interface/product.interface';
 
 export interface Category extends BaseEntity {
   name:string;
@@ -9,5 +9,5 @@ export interface Category extends BaseEntity {
 }
 
 export interface CategoryWithProduct extends Category {
-  products:ProductEntity[];
+  products:Product[];
 }
