@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as qrcode from 'qrcode';
 import type { Repository } from 'typeorm';
 
 import { CategoryService } from '../category/category.service';
@@ -21,5 +22,10 @@ export class RestaurantService {
 
     const { id: restaurantId } = restaurant;
     return this.categoryService.getCategoriesWithProducts(restaurantId);
+  }
+
+  public async generateQR(restaurantSlug:string):Promise<Buffer> {
+    const url = `http://localhost:3001/restaurant/${restaurantSlug}/menu`;
+    return qrcode.toBuffer(url);
   }
 }
