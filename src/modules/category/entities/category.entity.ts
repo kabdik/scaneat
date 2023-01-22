@@ -1,7 +1,8 @@
 import { BaseEntity } from "@/common/entities/base.entity";
 import { TableName } from "@/common/enums/table";
+import { ProductEntity } from "@/modules/product/entitites/product.entity";
 import { RestaurantEntity } from "@/modules/restaurant/entities/restaurant.entity";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import type { Category } from "../interfaces/category.interface";
 
 @Entity(TableName.CATEGORY)
@@ -13,7 +14,7 @@ export class CategoryEntity extends BaseEntity implements Category{
     restaurantId!: number;
 
     @Column('text')
-    desctiption!: string;
+    description!: string;
 
     @Column('boolean')
     isActive!: boolean;
@@ -24,4 +25,7 @@ export class CategoryEntity extends BaseEntity implements Category{
     })
     @JoinColumn({ name: 'restaurantId' })
     restaurant?: RestaurantEntity
+
+    @OneToMany(() => ProductEntity, product => product.category)
+    products?: ProductEntity[]
 }
