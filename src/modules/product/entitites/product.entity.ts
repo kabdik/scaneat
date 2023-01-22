@@ -7,13 +7,16 @@ import type { Product } from '../interface/product.interface';
 
 @Entity(TableName.PRODUCT)
 export class ProductEntity extends BaseEntity implements Product{
+    @Column('varchar', { nullable: false })
+    name!: string;
+    
     @Column('text')
     description!: string;
 
-    @Column('numeric', { precision: 10, scale: 2 })
+    @Column('numeric', { precision: 10, scale: 2, nullable: false })
     price!: number;
 
-    @Column('int')
+    @Column('int', { nullable: false })
     restaurantId!: number;
 
     @Column('int')
