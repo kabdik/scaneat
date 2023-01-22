@@ -23,7 +23,9 @@ import { RedisConfig } from './config/redis.config';
 import { SentryConfig } from './config/sentry.config';
 import { ServerConfig } from './config/server.config';
 import { AdminJSModule } from './modules/adminjs/adminjs.module';
+import { CategoryModule } from './modules/category/category.module';
 import { CityModule } from './modules/cities/city.module';
+import { ProductModule } from './modules/product/product.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
 import { UserModule } from './modules/user/user.module';
 
@@ -64,6 +66,8 @@ import { UserModule } from './modules/user/user.module';
     // https://docs.nestjs.com/recipes/router-module
     RouterModule.register([]),
     UserModule,
+    ProductModule,
+    CategoryModule,
   ],
   providers: [
     // Global Guard, Authentication check on all routers
