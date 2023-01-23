@@ -28,6 +28,8 @@ import { CityModule } from './modules/cities/city.module';
 import { ProductModule } from './modules/product/product.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
 import { UserModule } from './modules/user/user.module';
+import { RestaurantOwnerModule } from './modules/restaurant-owner/restaurant-owner.module';
+import { RestaurantStaffModule } from './modules/restaurant-staff/restaurant-staff.module';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { UserModule } from './modules/user/user.module';
     UserModule,
     ProductModule,
     CategoryModule,
+    RestaurantOwnerModule,
+    RestaurantStaffModule,
   ],
   providers: [
     // Global Guard, Authentication check on all routers
