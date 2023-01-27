@@ -6,7 +6,7 @@ export interface User extends BaseEntity {
   name:string;
   surname:string;
   email:string;
-  phone:string;
+  phone:string | null;
   password:string;
-  role:UserRoleType;
+  role:UserRoleType | null;
 }
