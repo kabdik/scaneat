@@ -12,17 +12,17 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
     @Column('varchar', { unique: true })
     slug!: string;
     
-    @Column('text')
-    phone!:string
+    @Column('text', {unique:true, nullable: true})
+    phone!:string | null
 
     @Column('int')
     cityId!:number
 
-    @Column('text')
-    address!:string
+    @Column('text', { nullable: true })
+    address!:string | null
 
     @Column('numeric',{scale:1,default:0.0,nullable:false})
-    rating!:number
+    rating!:number 
 
     @Column('boolean',{default:true})
     hasTakeAway!: boolean
@@ -30,8 +30,11 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
     @Column('boolean',{default:false})
     hasDelivery!: boolean
     
-    @Column('boolean',{default:true})
+    @Column('boolean',{default:false})
     isActive!: boolean
+
+    @Column('boolean',{default:false})
+    isVerified!: boolean;
 
     @ManyToOne(()=>CityEntity,{
         onDelete:"SET NULL",
