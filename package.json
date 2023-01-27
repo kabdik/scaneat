@@ -51,6 +51,7 @@
     "@nestjs/typeorm": "^9.0.0",
     "@nestjs/websockets": "^9.1.4",
     "@ntegral/nestjs-sentry": "^4.0.0",
+    "@sendgrid/mail": "^7.7.0",
     "@sentry/node": "^7.15.0",
     "@socket.io/redis-adapter": "^7.2.0",
     "@types/qrcode": "^1.5.0",

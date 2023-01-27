@@ -22,4 +22,6 @@ export class ServerConfig {
   public static readonly JWT_SECRET_TTL_IN_DAYS: number = get('JWT_SECRET_TTL_IN_DAYS').default(7).required().asInt();
 
   public static readonly JWT_COOKIE_SECURE: boolean = get('JWT_COOKIE_SECURE').default('false').asBool();
+
+  public static readonly SENDGRID_API_KEY:string = get('SENDGRID_API_KEY').required().asString();
 }
