@@ -6,4 +6,5 @@ export enum TableName {
   CATEGORY = 'category',
   RESTAURANT_OWNER = 'restaurant_owner',
   RESTAURANT_STAFF = 'restaurant_staff',
+  PHOTO = 'photo',
 }
