@@ -6,6 +6,7 @@ import type { Repository } from 'typeorm';
 import { CategoryService } from '../category/category.service';
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
 import { RestaurantEntity } from './entities/restaurant.entity';
+import type { Restaurant } from './interfaces/restaurant.interface';
 
 @Injectable()
 export class RestaurantService {
@@ -27,5 +28,9 @@ export class RestaurantService {
   public async generateQR(restaurantSlug:string):Promise<Buffer> {
     const url = `http://localhost:3001/restaurant/${restaurantSlug}/menu`;
     return qrcode.toBuffer(url);
+  }
+
+  public async getAll():Promise<Restaurant[]> {
+    return this.restaurantRepository.find();
   }
 }

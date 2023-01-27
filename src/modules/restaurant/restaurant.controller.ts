@@ -2,6 +2,7 @@ import { Controller, Get, Param, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
+import type { Restaurant } from './interfaces/restaurant.interface';
 import { RestaurantService } from './restaurant.service';
 
 @Controller('restaurant')
@@ -19,5 +20,10 @@ export class RestaurantController {
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', 'attachment; filename=qr-code.png');
     res.send(qrCode);
+  }
+
+  @Get('')
+  public async getAll():Promise<Restaurant[]> {
+    return this.restaurant.getAll();
   }
 }
