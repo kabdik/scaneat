@@ -66,9 +66,9 @@ export class RestaurantService {
     return entityManager.save(RestaurantEntity, restaurantData);
   }
 
-  public async getAllRestaurantRequests():Promise<RestaurantWithOwner[]> {
+  public async getAllRestaurantRequests(verificationStatus:VerificationStatus):Promise<RestaurantWithOwner[]> {
     return <RestaurantWithOwner[]> await this.restaurantRepository.find({
-      where: { verificationStatus: VerificationStatus.PENDING },
+      where: { verificationStatus },
       relations: ['restaurantOwner'] });
   }
 

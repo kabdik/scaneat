@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
@@ -6,6 +6,7 @@ import { UseAuth } from '@/common/decorators/auth.decorator';
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
 import { UserRoleType } from '../user/enums/user-role.enum';
 import { CreateRestaurantRequestBodyDto } from './dto/create-restaurant-request.body.dto';
+import type { VerificationStatus } from './enum/verification-status.enum';
 import type { Restaurant, RestaurantWithOwner } from './interfaces/restaurant.interface';
 import { RestaurantService } from './restaurant.service';
 
@@ -15,8 +16,8 @@ export class RestaurantController {
 
   @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
   @Get('requests')
-  public async getAllRestaurantRequests():Promise<RestaurantWithOwner[]> {
-    return this.restaurant.getAllRestaurantRequests();
+  public async getAllRestaurantRequests(@Query('status') status:VerificationStatus):Promise<RestaurantWithOwner[]> {
+    return this.restaurant.getAllRestaurantRequests(status);
   }
 
   @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
