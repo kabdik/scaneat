@@ -1,18 +1,18 @@
-import { CreateRestaurantOwnerBodyDto } from "@/modules/restaurant-owner/dto/create-restaurant-owner.body.dto";
+import { CreateRestaurantOwnerRequestBodyDto } from "@/modules/restaurant-owner/dto/create-restaurant-owner.body.dto";
 import { Type } from "class-transformer";
 import { IsNotEmpty, ValidateNested } from "class-validator";
-import { createRestaurantBodyDto } from "./create-restaurant.body.dto";
+import { CreateRestaurantBodyDto } from "./create-restaurant.body.dto";
 
 
-export class createRestaurantRequestBodyDto{
+export class CreateRestaurantRequestBodyDto{
     @IsNotEmpty()
-    @Type(() => createRestaurantBodyDto)
+    @Type(() => CreateRestaurantBodyDto)
     @ValidateNested()
-    restaurant!:createRestaurantBodyDto;
+    restaurant!:CreateRestaurantBodyDto;
 
     @IsNotEmpty()
-    @Type(() => CreateRestaurantOwnerBodyDto)
+    @Type(() => CreateRestaurantOwnerRequestBodyDto)
     @ValidateNested()
-    restaurantOwner!:CreateRestaurantOwnerBodyDto
+    restaurantOwner!:CreateRestaurantOwnerRequestBodyDto
 
 }

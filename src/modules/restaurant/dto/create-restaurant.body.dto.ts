@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
 
-export class createRestaurantBodyDto{
+export class CreateRestaurantBodyDto{
     @IsNotEmpty()
     @IsString()
     name!: string
@@ -18,13 +18,14 @@ export class createRestaurantBodyDto{
     cityId!: number
 
     @IsString()
+    @IsOptional()
     address!: string | null
 
     @IsOptional()
     @IsBoolean()
-    hasTakeAway!: boolean | null 
+    hasTakeAway?: boolean 
 
     @IsOptional()
     @IsBoolean()
-    hasDelivery!: boolean | null 
+    hasDelivery?: boolean  
 }
