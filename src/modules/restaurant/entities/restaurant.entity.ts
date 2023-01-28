@@ -1,7 +1,10 @@
 import { BaseEntity } from "@/common/entities/base.entity";
 import { TableName } from "@/common/enums/table";
 import { CityEntity } from "@/modules/cities/city.entity";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { RestaurantOwnerEntity } from "@/modules/restaurant-owner/entities/restaurant-owner.entity";
+import type { RestaurantOwner } from "@/modules/restaurant-owner/interfaces/restaurant-owner.intereface";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { VerificationStatus } from "../enum/verification-status.enum";
 import type {  Restaurant } from "../interfaces/restaurant.interface";
 
 @Entity(TableName.RESTAURANT)
@@ -21,20 +24,20 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
     @Column('text', {nullable: true})
     address!: string | null
 
-    @Column('numeric',{scale:1,default:0.0,nullable:false})
+    @Column('numeric', {scale:1,default:0.0,nullable:false})
     rating!:number
 
-    @Column('boolean',{ default:true})
+    @Column('boolean', { default:true})
     hasTakeAway!: boolean
 
-    @Column('boolean',{ default:false})
+    @Column('boolean', { default:false})
     hasDelivery!: boolean
     
-    @Column('boolean',{ default:false})
+    @Column('boolean', { default:false})
     isActive!: boolean
 
-    @Column('boolean',{ default:false})
-    isVerified!: boolean
+    @Column('enum', { enum: VerificationStatus, default: VerificationStatus.PENDING})
+    verificationStatus!: VerificationStatus
 
     @ManyToOne(()=>CityEntity,{
         onDelete:"SET NULL",
@@ -42,4 +45,7 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
 })
     @JoinColumn({name:'cityId'})
     city?:CityEntity
+
+    @OneToMany(()=>RestaurantOwnerEntity, (restaurantOwner)=> restaurantOwner.restaurant)
+    restaurantOwner!:RestaurantOwner
 }
