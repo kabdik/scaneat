@@ -3,7 +3,7 @@ import { TableName } from "@/common/enums/table";
 import { CityEntity } from "@/modules/cities/city.entity";
 import { RestaurantOwnerEntity } from "@/modules/restaurant-owner/entities/restaurant-owner.entity";
 import type { RestaurantOwner } from "@/modules/restaurant-owner/interfaces/restaurant-owner.intereface";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { VerificationStatus } from "../enum/verification-status.enum";
 import type {  Restaurant } from "../interfaces/restaurant.interface";
 
@@ -24,7 +24,8 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
     @Column('text', {nullable: true})
     address!: string | null
 
-    @Column('numeric', {scale:1,default:0.0,nullable:false})
+    @Column('numeric', { default:0.00, scale:2, precision:3})
+    @Check(`"rating" >= 0.00 AND "rating" <= 5.00`)
     rating!:number
 
     @Column('boolean', { default:true})
