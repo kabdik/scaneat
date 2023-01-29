@@ -1,6 +1,6 @@
 - hosts: all
   vars:
-    deploy_folder: /home/ubuntu/nutrix/nutrix
+    deploy_folder: /home/ubuntu/scaneat/scaneat
 
   tasks:
     - name: Copy files to the server
