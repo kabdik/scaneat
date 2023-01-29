@@ -1,6 +1,7 @@
 import { BaseEntity } from '@/common/entities/base.entity';
 import { TableName } from '@/common/enums/table';
 import { CategoryEntity } from '@/modules/category/entities/category.entity';
+import { PhotoEntity } from '@/modules/photo/entities/photo.entity';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import type { Product } from '../interface/product.interface';
@@ -22,6 +23,9 @@ export class ProductEntity extends BaseEntity implements Product{
     @Column('int')
     categoryId!: number
 
+    @Column('int', { nullable: true })
+    photoId!:number | null
+
     @ManyToOne(() => RestaurantEntity,{
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
@@ -35,4 +39,11 @@ export class ProductEntity extends BaseEntity implements Product{
     })
     @JoinColumn({name: 'categoryId' })
     category?: CategoryEntity
+
+    @ManyToOne(() => PhotoEntity,{
+        onDelete:'SET NULL',
+        onUpdate:'CASCADE'
+    })
+    @JoinColumn({ name:'photoId'})
+    photo?:PhotoEntity
 }
