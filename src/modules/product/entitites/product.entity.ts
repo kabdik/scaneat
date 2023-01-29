@@ -3,10 +3,11 @@ import { TableName } from '@/common/enums/table';
 import { CategoryEntity } from '@/modules/category/entities/category.entity';
 import { PhotoEntity } from '@/modules/photo/entities/photo.entity';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import type { Product } from '../interface/product.interface';
 
 @Entity(TableName.PRODUCT)
+@Index(['name','restaurantId'], {unique:true})
 export class ProductEntity extends BaseEntity implements Product{
     @Column('varchar', { nullable: false })
     name!: string;
@@ -14,10 +15,10 @@ export class ProductEntity extends BaseEntity implements Product{
     @Column('text')
     description!: string;
 
-    @Column('numeric', { precision: 10, scale: 2, nullable: false })
+    @Column('numeric', { precision: 10, scale: 2 })
     price!: number;
 
-    @Column('int', { nullable: false })
+    @Column('int')
     restaurantId!: number;
 
     @Column('int')
