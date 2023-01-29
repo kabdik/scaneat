@@ -38,7 +38,12 @@ export class UtilService {
 
     const randomName = uuid();
 
-    return path.join(prefixDir, `${randomName}${fileExtName}`);
+    let url = prefixDir.concat('/', `${randomName}${fileExtName}`);
+    if (prefixDir.includes('/')) {
+      url = url.replace('/', '');
+    }
+    return url;
+    // return path.join(prefixDir, `${randomName}${fileExtName}`);
   }
 
   public generateSqlParams(array: Array<any>, offset:number = 1): string {
