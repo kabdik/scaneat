@@ -5,6 +5,7 @@ import type { Repository } from 'typeorm';
 import { TableName } from '@/common/enums/table';
 
 import type { AddCategoryWithRestaurantDto } from './dto/add-category.body.dto';
+import type { UpdateCategoryBodyDto } from './dto/update-category.body.dto';
 import { CategoryEntity } from './entities/category.entity';
 import type { Category, CategoryWithProduct } from './interfaces/category.interface';
 
@@ -37,5 +38,21 @@ export class CategoryService {
         ON c.id = pr."categoryId"
         GROUP BY c.id`,
     );
+  }
+
+  public async deleteCategory(cateroryId:number):Promise<void> {
+    const category = await this.categoryRepository.findOneBy({ id: cateroryId });
+    if (!category) {
+      throw new BadRequestException('Категории с таким id не существует');
+    }
+    category.isDeleted = true;
+    await this.categoryRepository.save(category);
+  }
+
+  public async updateCategory(categoryId:number, data:UpdateCategoryBodyDto):Promise<void> {
+    const { affected } = await this.categoryRepository.update(categoryId, data);
+    if (affected === 0) {
+      throw new BadRequestException('Категории с таким id не существует');
+    }
   }
 }
