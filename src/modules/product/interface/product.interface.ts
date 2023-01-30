@@ -7,4 +7,5 @@ export interface Product extends BaseEntity {
   restaurantId: number;
   price: number;
   photoId: number | null;
+  isDeleted: boolean;
 }
