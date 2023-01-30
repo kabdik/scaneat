@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
 
@@ -18,5 +18,11 @@ export class CategoryManagementController {
       @Body() data:AddCategoryBodyDto,
   ): Promise<Category> {
     return this.categoryService.addCategory({ ...data, restaurantId });
+  }
+
+  @UseAuth(UserRoleType.RESTAURANT_OWNER)
+  @Get('')
+  public async getCategories():Promise<Category[]> {
+    return this.categoryService.getCategories();
   }
 }
