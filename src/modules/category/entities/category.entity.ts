@@ -20,6 +20,9 @@ export class CategoryEntity extends BaseEntity implements Category{
     @Column('boolean',{ default: true })
     isActive!: boolean;
 
+    @Column('boolean',{ default: false })
+    isDeleted!: boolean
+
     @ManyToOne(() => RestaurantEntity,{
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'

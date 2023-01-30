@@ -26,6 +26,9 @@ export class ProductEntity extends BaseEntity implements Product{
 
     @Column('int', { nullable: true })
     photoId!:number | null
+    
+    @Column('boolean', { default: false })
+    isDeleted!: boolean;
 
     @ManyToOne(() => RestaurantEntity,{
         onDelete: 'CASCADE',
