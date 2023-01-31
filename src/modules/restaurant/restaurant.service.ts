@@ -82,4 +82,15 @@ export class RestaurantService {
     restaurant.verificationStatus = VerificationStatus.ACCEPTED;
     await this.restaurantRepository.save(restaurant);
   }
+
+  public async rejectRestaurantRequest(restaurantSlug:string):Promise<void> {
+    const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug },
+      relations: ['restaurantOwner'] });
+    if (!restaurant) {
+      throw new BadRequestException('There is no restaurant with this slug');
+    }
+
+    restaurant.verificationStatus = VerificationStatus.REJECTED;
+    await this.restaurantRepository.save(restaurant);
+  }
 }

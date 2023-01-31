@@ -26,6 +26,12 @@ export class RestaurantController {
     return this.restaurant.verifyRestaurantRequest(restaurantSlug);
   }
 
+  @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
+  @Patch('requests/:restaurantSlug/reject')
+  public async rejectRestaurantRequest(@Param('restaurantSlug') restaurantSlug:string): Promise<void> {
+    return this.restaurant.rejectRestaurantRequest(restaurantSlug);
+  }
+
   @Get(':restaurantSlug/menu')
   public async getMenu(@Param('restaurantSlug') restaurantSlug: string): Promise<CategoryWithProduct[]> {
     return this.restaurant.getMenu(restaurantSlug);
