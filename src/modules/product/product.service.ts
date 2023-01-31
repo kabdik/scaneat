@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
@@ -41,5 +41,9 @@ export class ProductService {
     if (affected === 0) {
       throw new BadRequestException('Продукта с таким id не существует');
     }
+  }
+
+  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
+    return this.productRepository.findBy({ categoryId });
   }
 }

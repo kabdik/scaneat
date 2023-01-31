@@ -1,6 +1,8 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
+import type { Product } from '@/modules/product/interface/product.interface';
+import { ProductService } from '@/modules/product/product.service';
 
 import { UserRoleType } from '../../user/enums/user-role.enum';
 import { CategoryService } from '../category.service';
@@ -11,7 +13,15 @@ import type { Category } from '../interfaces/category.interface';
 @UseAuth(UserRoleType.RESTAURANT_OWNER)
 @Controller('management/category')
 export class CategoryManagementController {
-  constructor(private readonly categoryService:CategoryService) {}
+  constructor(
+    private readonly categoryService:CategoryService,
+    private readonly productService:ProductService,
+  ) {}
+
+  @Get('/:categoryId/product')
+  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
+    return this.productService.getCategoryProducts(categoryId);
+  }
 
   @Post('/:restaurantId')
   public async addCategory(
