@@ -2,7 +2,9 @@ import { Body, Controller, Get, Param, Patch, Post, Query, Res } from '@nestjs/c
 import type { Response } from 'express';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
+import { ReqUser } from '@/common/decorators/req-user.decorator';
 
+import type { UserPayload } from '../auth/auth.interface';
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
 import { UserRoleType } from '../user/enums/user-role.enum';
 import { CreateRestaurantRequestBodyDto } from './dto/create-restaurant-request.body.dto';
@@ -52,12 +54,12 @@ export class RestaurantController {
 
   @Post('create')
   public async createRestaurantRequest(@Body() data: CreateRestaurantRequestBodyDto):Promise<void> {
-    console.log(data.restaurant.photoId);
     await this.restaurant.createRestaurantRequest(data);
   }
 
+  @UseAuth(UserRoleType.RESTAURANT_OWNER)
   @Get('')
-  public async getAll():Promise<Restaurant[]> {
-    return this.restaurant.getAll();
+  public async getAll(@ReqUser() restaurantOwner:UserPayload, @Query('status') status:VerificationStatus):Promise<Restaurant[]> {
+    return this.restaurant.getAll(restaurantOwner.userId, status);
   }
 }

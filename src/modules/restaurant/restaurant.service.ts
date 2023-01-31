@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as qrcode from 'qrcode';
 import type { EntityManager, Repository } from 'typeorm';
 
+import { TableName } from '@/common/enums/table';
+
 import { CategoryService } from '../category/category.service';
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
 import { RestaurantOwnerService } from '../restaurant-owner/restaurant-owner.service';
@@ -44,8 +46,18 @@ export class RestaurantService {
     return qrcode.toBuffer(url);
   }
 
-  public async getAll():Promise<Restaurant[]> {
-    return this.restaurantRepository.find();
+  public async getAll(userId:number, status:VerificationStatus):Promise<Restaurant[]> {
+    return <Promise<Restaurant[]>> this.restaurantRepository.query(
+      `
+      SELECT r.* 
+        FROM ${TableName.RESTAURANT} AS r 
+        INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro 
+        ON r.id=ro."restaurantId"
+        WHERE ro."userId"=$1
+        AND r."verificationStatus"=$2
+        `,
+      [userId, status],
+    );
   }
 
   public async createRestaurantRequest({ restaurant: restaurantData, restaurantOwner }: CreateRestaurantRequestBodyDto):Promise<void> {
