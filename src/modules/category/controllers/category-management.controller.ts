@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
 
@@ -19,11 +19,6 @@ export class CategoryManagementController {
       @Body() data:AddCategoryBodyDto,
   ): Promise<Category> {
     return this.categoryService.addCategory({ ...data, restaurantId });
-  }
-
-  @Get('')
-  public async getCategories():Promise<Category[]> {
-    return this.categoryService.getCategories();
   }
 
   @Delete('/:categoryId')

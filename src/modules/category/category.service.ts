@@ -31,12 +31,16 @@ export class CategoryService {
     return <Promise<Category>> this.categoryRepository.save(data);
   }
 
-  public async getCategories():Promise<Category[]> {
+  public async getCategories(restaurantId:number):Promise<Category[]> {
     return <Category[]> await this.categoryRepository.query(
-      `SELECT c.*, COUNT(pr.id) AS "numberOfProducts"
+      `
+      SELECT c.*, COUNT(pr.id) AS "numberOfProducts"
         FROM ${TableName.CATEGORY} AS c LEFT JOIN ${TableName.PRODUCT} AS pr 
         ON c.id = pr."categoryId"
-        GROUP BY c.id`,
+        WHERE c."restaurantId"=$1
+        GROUP BY c.id
+        `,
+      [restaurantId],
     );
   }
 
