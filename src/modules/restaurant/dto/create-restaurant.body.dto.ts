@@ -28,4 +28,8 @@ export class CreateRestaurantBodyDto{
     @IsOptional()
     @IsBoolean()
     hasDelivery?: boolean  
+
+    @IsNumber()
+    @IsOptional()
+    photoId!: number | null
 }

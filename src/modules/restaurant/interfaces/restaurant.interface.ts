@@ -14,6 +14,7 @@ export interface Restaurant extends BaseEntity {
   verificationStatus: VerificationStatus;
   rating: number;
   address: string | null;
+  photoId: number | null;
 }
 
 export interface RestaurantWithOwner extends Restaurant {

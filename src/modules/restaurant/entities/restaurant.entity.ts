@@ -1,6 +1,7 @@
 import { BaseEntity } from "@/common/entities/base.entity";
 import { TableName } from "@/common/enums/table";
 import { CityEntity } from "@/modules/cities/city.entity";
+import { PhotoEntity } from "@/modules/photo/entities/photo.entity";
 import { RestaurantOwnerEntity } from "@/modules/restaurant-owner/entities/restaurant-owner.entity";
 import type { RestaurantOwner } from "@/modules/restaurant-owner/interfaces/restaurant-owner.intereface";
 import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
@@ -28,17 +29,20 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
     @Check(`"rating" >= 0.00 AND "rating" <= 5.00`)
     rating!:number
 
-    @Column('boolean', { default:true})
+    @Column('boolean', { default:true })
     hasTakeAway!: boolean
 
-    @Column('boolean', { default:false})
+    @Column('boolean', { default:false })
     hasDelivery!: boolean
     
-    @Column('boolean', { default:false})
+    @Column('boolean', { default:false })
     isActive!: boolean
 
     @Column('enum', { enum: VerificationStatus, default: VerificationStatus.PENDING})
     verificationStatus!: VerificationStatus
+
+    @Column('int', { nullable: true })
+    photoId!: number | null
 
     @ManyToOne(()=>CityEntity,{
         onDelete:"SET NULL",
@@ -46,6 +50,13 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
 })
     @JoinColumn({name:'cityId'})
     city?:CityEntity
+
+    @ManyToOne(() => PhotoEntity,{
+        onDelete:'SET NULL',
+        onUpdate:'CASCADE'
+    })
+    @JoinColumn({ name: 'photoId'})
+    photo?: PhotoEntity
 
     @OneToMany(()=>RestaurantOwnerEntity, (restaurantOwner)=> restaurantOwner.restaurant)
     restaurantOwner!:RestaurantOwner

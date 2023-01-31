@@ -46,6 +46,7 @@ export class RestaurantController {
 
   @Post('create')
   public async createRestaurantRequest(@Body() data: CreateRestaurantRequestBodyDto):Promise<void> {
+    console.log(data.restaurant.photoId);
     await this.restaurant.createRestaurantRequest(data);
   }
 
