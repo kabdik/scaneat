@@ -4,13 +4,13 @@ import type { Response } from 'express';
 import { UseAuth } from '@/common/decorators/auth.decorator';
 import { ReqUser } from '@/common/decorators/req-user.decorator';
 
-import type { UserPayload } from '../auth/auth.interface';
-import type { CategoryWithProduct } from '../category/interfaces/category.interface';
-import { UserRoleType } from '../user/enums/user-role.enum';
-import { CreateRestaurantRequestBodyDto } from './dto/create-restaurant-request.body.dto';
-import type { VerificationStatus } from './enum/verification-status.enum';
-import type { Restaurant, RestaurantWithOwner } from './interfaces/restaurant.interface';
-import { RestaurantService } from './restaurant.service';
+import type { UserPayload } from '../../auth/auth.interface';
+import type { CategoryWithProduct } from '../../category/interfaces/category.interface';
+import { UserRoleType } from '../../user/enums/user-role.enum';
+import { CreateRestaurantRequestBodyDto } from '../dto/create-restaurant-request.body.dto';
+import type { VerificationStatus } from '../enum/verification-status.enum';
+import type { Restaurant, RestaurantWithOwner } from '../interfaces/restaurant.interface';
+import { RestaurantService } from '../restaurant.service';
 
 @Controller('restaurant')
 export class RestaurantController {

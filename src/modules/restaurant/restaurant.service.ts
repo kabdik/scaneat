@@ -10,6 +10,7 @@ import type { CategoryWithProduct } from '../category/interfaces/category.interf
 import { RestaurantOwnerService } from '../restaurant-owner/restaurant-owner.service';
 import type { CreateRestaurantRequestBodyDto } from './dto/create-restaurant-request.body.dto';
 import type { CreateRestaurantBodyDto } from './dto/create-restaurant.body.dto';
+import type { UpdateRestaurantBodyDto } from './dto/update-restaurant.body.dto';
 import { RestaurantEntity } from './entities/restaurant.entity';
 import { VerificationStatus } from './enum/verification-status.enum';
 import type { Restaurant, RestaurantWithOwner } from './interfaces/restaurant.interface';
@@ -104,5 +105,12 @@ export class RestaurantService {
 
     restaurant.verificationStatus = VerificationStatus.REJECTED;
     await this.restaurantRepository.save(restaurant);
+  }
+
+  public async updateRestaurant(restaurantId:number, data:UpdateRestaurantBodyDto):Promise<void> {
+    const { affected } = await this.restaurantRepository.update(restaurantId, data);
+    if (affected === 0) {
+      throw new BadRequestException('Ресторана с таким id не существует');
+    }
   }
 }

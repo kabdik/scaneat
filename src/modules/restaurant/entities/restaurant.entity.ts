@@ -1,63 +1,63 @@
-import { BaseEntity } from "@/common/entities/base.entity";
-import { TableName } from "@/common/enums/table";
-import { CityEntity } from "@/modules/cities/city.entity";
-import { PhotoEntity } from "@/modules/photo/entities/photo.entity";
-import { RestaurantOwnerEntity } from "@/modules/restaurant-owner/entities/restaurant-owner.entity";
-import type { RestaurantOwner } from "@/modules/restaurant-owner/interfaces/restaurant-owner.intereface";
-import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { VerificationStatus } from "../enum/verification-status.enum";
-import type {  Restaurant } from "../interfaces/restaurant.interface";
+import { BaseEntity } from '@/common/entities/base.entity';
+import { TableName } from '@/common/enums/table';
+import { CityEntity } from '@/modules/cities/city.entity';
+import { PhotoEntity } from '@/modules/photo/entities/photo.entity';
+import { RestaurantOwnerEntity } from '@/modules/restaurant-owner/entities/restaurant-owner.entity';
+import type { RestaurantOwner } from '@/modules/restaurant-owner/interfaces/restaurant-owner.intereface';
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { VerificationStatus } from '../enum/verification-status.enum';
+import type { Restaurant } from '../interfaces/restaurant.interface';
 
 @Entity(TableName.RESTAURANT)
 export class RestaurantEntity extends BaseEntity implements Restaurant {
-    @Column('varchar')
-    name!:string
+  @Column('varchar')
+  name!: string;
 
-    @Column('varchar', { unique: true })
-    slug!: string;
-    
-    @Column('text', { unique: true, nullable: true })
-    phone!:string | null
+  @Column('varchar', { unique: true })
+  slug!: string;
 
-    @Column('int')
-    cityId!:number
+  @Column('text', { unique: true, nullable: true })
+  phone!: string | null;
 
-    @Column('text', {nullable: true})
-    address!: string | null
+  @Column('int')
+  cityId!: number;
 
-    @Column('numeric', { default:0.00, scale:2, precision:3})
-    @Check(`"rating" >= 0.00 AND "rating" <= 5.00`)
-    rating!:number
+  @Column('text', { nullable: true })
+  address!: string | null;
 
-    @Column('boolean', { default:true })
-    hasTakeAway!: boolean
+  @Column('numeric', { default: 0.0, scale: 2, precision: 3 })
+  @Check(`"rating" >= 0.00 AND "rating" <= 5.00`)
+  rating!: number;
 
-    @Column('boolean', { default:false })
-    hasDelivery!: boolean
-    
-    @Column('boolean', { default:false })
-    isActive!: boolean
+  @Column('boolean', { default: true })
+  hasTakeAway!: boolean;
 
-    @Column('enum', { enum: VerificationStatus, default: VerificationStatus.PENDING})
-    verificationStatus!: VerificationStatus
+  @Column('boolean', { default: false })
+  hasDelivery!: boolean;
 
-    @Column('int', { nullable: true })
-    photoId!: number | null
+  @Column('boolean', { default: false })
+  isActive!: boolean;
 
-    @ManyToOne(()=>CityEntity,{
-        onDelete:"SET NULL",
-        onUpdate:"CASCADE"
-})
-    @JoinColumn({name:'cityId'})
-    city?:CityEntity
+  @Column('enum', { enum: VerificationStatus, default: VerificationStatus.PENDING })
+  verificationStatus!: VerificationStatus;
 
-    @ManyToOne(() => PhotoEntity,{
-        onDelete:'SET NULL',
-        onUpdate:'CASCADE'
-    })
-    @JoinColumn({ name: 'photoId'})
-    photo?: PhotoEntity
+  @Column('int', { nullable: true })
+  photoId!: number | null;
 
-    @OneToMany(()=>RestaurantOwnerEntity, (restaurantOwner)=> restaurantOwner.restaurant)
-    restaurantOwner!:RestaurantOwner
+  @ManyToOne(() => CityEntity, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'cityId' })
+  city?: CityEntity;
+
+  @ManyToOne(() => PhotoEntity, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'photoId' })
+  photo?: PhotoEntity;
+
+  @OneToMany(() => RestaurantOwnerEntity, (restaurantOwner) => restaurantOwner.restaurant)
+  restaurantOwner!: RestaurantOwner;
 }
