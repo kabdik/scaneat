@@ -26,6 +26,7 @@ import { AdminJSModule } from './modules/adminjs/adminjs.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
 import { CityModule } from './modules/cities/city.module';
+import { OrderModule } from './modules/order/order.module';
 import { PhotoModule } from './modules/photo/photo.module';
 import { ProductModule } from './modules/product/product.module';
 import { RestaurantOwnerModule } from './modules/restaurant-owner/restaurant-owner.module';
@@ -76,6 +77,7 @@ import { UserModule } from './modules/user/user.module';
     RestaurantStaffModule,
     AuthModule,
     PhotoModule,
+    OrderModule,
   ],
   providers: [
     // Global Guard, Authentication check on all routers

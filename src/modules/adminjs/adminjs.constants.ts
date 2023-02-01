@@ -1,5 +1,8 @@
 import { CategoryEntity } from '../category/entities/category.entity';
 import { CityEntity } from '../cities/city.entity';
+import { OrderAddressEntity } from '../order/entities/order-address.entity';
+import { OrderProductEntity } from '../order/entities/order-product.entity';
+import { OrderEntity } from '../order/entities/order.entity';
 import { PhotoEntity } from '../photo/entities/photo.entity';
 import { ProductEntity } from '../product/entitites/product.entity';
 import { RestaurantOwnerEntity } from '../restaurant-owner/entities/restaurant-owner.entity';
@@ -16,4 +19,7 @@ export const ADMINJS_RESOURCES = [
   RestaurantStaffEntity,
   RestaurantOwnerEntity,
   PhotoEntity,
+  OrderEntity,
+  OrderProductEntity,
+  OrderAddressEntity,
 ];
