@@ -45,7 +45,7 @@ export class RestaurantManagementController {
 
   @UseAuth(UserRoleType.RESTAURANT_OWNER)
   @Get('')
-  public async getAll(@ReqUser() restaurantOwner:UserPayload, @Query('status') status:VerificationStatus):Promise<Restaurant[]> {
+  public async getAll(@ReqUser() restaurantOwner:UserPayload, @Query('status') status?:VerificationStatus):Promise<Restaurant[]> {
     return this.restaurantService.getAll(restaurantOwner.userId, status);
   }
 }
