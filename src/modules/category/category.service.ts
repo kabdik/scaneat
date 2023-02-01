@@ -50,6 +50,7 @@ export class CategoryService {
       throw new BadRequestException('Категории с таким id не существует');
     }
     category.isDeleted = true;
+    category.isActive = false;
     await this.categoryRepository.save(category);
   }
 
