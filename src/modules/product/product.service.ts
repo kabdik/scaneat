@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
+import { TableName } from '@/common/enums/table';
+
 import type { AddProductWithCategoryDto } from './dto/add-product.body.dto';
 import type { UpdateProductBodyDto } from './dto/update-product.body.dto';
 import { ProductEntity } from './entitites/product.entity';
@@ -44,6 +46,11 @@ export class ProductService {
   }
 
   public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
-    return this.productRepository.findBy({ categoryId });
+    return <Promise<Product[]>> this.productRepository.manager.query(`
+      SELECT pr.*, p."originalUrl"
+        FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
+        ON pr."photoId" = p.id
+        where pr."categoryId" = $1
+    `, [categoryId]);
   }
 }
