@@ -1,10 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
-import { ReqUser } from '@/common/decorators/req-user.decorator';
 
-import type { UserPayload } from '../../auth/auth.interface';
 import type { CategoryWithProduct } from '../../category/interfaces/category.interface';
 import { UserRoleType } from '../../user/enums/user-role.enum';
 import { CreateRestaurantRequestBodyDto } from '../dto/create-restaurant-request.body.dto';
@@ -22,18 +20,6 @@ export class RestaurantController {
     return this.restaurant.getAllRestaurantRequests(status);
   }
 
-  @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
-  @Patch('requests/:restaurantSlug/verify')
-  public async verifyRestaurantRequest(@Param('restaurantSlug') restaurantSlug:string): Promise<void> {
-    return this.restaurant.verifyRestaurantRequest(restaurantSlug);
-  }
-
-  @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
-  @Patch('requests/:restaurantSlug/reject')
-  public async rejectRestaurantRequest(@Param('restaurantSlug') restaurantSlug:string): Promise<void> {
-    return this.restaurant.rejectRestaurantRequest(restaurantSlug);
-  }
-
   @Get(':restaurantSlug/menu')
   public async getMenu(@Param('restaurantSlug') restaurantSlug: string): Promise<CategoryWithProduct[]> {
     return this.restaurant.getMenu(restaurantSlug);
@@ -44,6 +30,7 @@ export class RestaurantController {
     return this.restaurant.getRestaurantbySlug(restaurantSlug);
   }
 
+  @UseAuth(UserRoleType.RESTAURANT_OWNER)
   @Get(':restaurantSlug/qr')
   public async generateQR(@Param('restaurantSlug') restaurantSlug:string, @Res() res:Response): Promise<void> {
     const qrCode = await this.restaurant.generateQR(restaurantSlug);
@@ -55,11 +42,5 @@ export class RestaurantController {
   @Post('create')
   public async createRestaurantRequest(@Body() data: CreateRestaurantRequestBodyDto):Promise<void> {
     await this.restaurant.createRestaurantRequest(data);
-  }
-
-  @UseAuth(UserRoleType.RESTAURANT_OWNER)
-  @Get('')
-  public async getAll(@ReqUser() restaurantOwner:UserPayload, @Query('status') status:VerificationStatus):Promise<Restaurant[]> {
-    return this.restaurant.getAll(restaurantOwner.userId, status);
   }
 }

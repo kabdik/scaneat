@@ -85,8 +85,8 @@ export class RestaurantService {
       relations: ['restaurantOwner'] });
   }
 
-  public async verifyRestaurantRequest(restaurantSlug:string):Promise<void> {
-    const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug },
+  public async verifyRestaurantRequest(restaurantId:number):Promise<void> {
+    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
       relations: ['restaurantOwner'] });
     if (!restaurant) {
       throw new BadRequestException('There is no restaurant with this slug');
@@ -96,8 +96,8 @@ export class RestaurantService {
     await this.restaurantRepository.save(restaurant);
   }
 
-  public async rejectRestaurantRequest(restaurantSlug:string):Promise<void> {
-    const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug },
+  public async rejectRestaurantRequest(restaurantId:number):Promise<void> {
+    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
       relations: ['restaurantOwner'] });
     if (!restaurant) {
       throw new BadRequestException('There is no restaurant with this slug');
