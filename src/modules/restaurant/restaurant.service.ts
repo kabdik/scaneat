@@ -47,20 +47,23 @@ export class RestaurantService {
     return qrcode.toBuffer(url);
   }
 
-  public async getAll(userId:number, status:VerificationStatus):Promise<Restaurant[]> {
-    return <Promise<Restaurant[]>> this.restaurantRepository.query(
-      `
-      SELECT r.*, p.* 
+  public async getAll(userId:number, status?:VerificationStatus):Promise<Restaurant[]> {
+    const params: Array<string | number> = [userId];
+    let query = `
+      SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
+      r."isActive", r."verificationStatus", p."originalUrl", p.thumbnails 
         FROM ${TableName.RESTAURANT} AS r 
         INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro 
         ON r.id=ro."restaurantId"
         LEFT JOIN ${TableName.PHOTO} as p
         on r."photoId" = p.id
-        WHERE ro."userId"=$1
-        AND r."verificationStatus"=$2
-        `,
-      [userId, status],
-    );
+        WHERE ro."userId"=$1 
+        `;
+    if (status) {
+      query += 'AND r."verificationStatus"=$2';
+      params.push(status);
+    }
+    return <Promise<Restaurant[]>> this.restaurantRepository.query(query, params);
   }
 
   public async createRestaurantRequest({ restaurant: restaurantData, restaurantOwner }: CreateRestaurantRequestBodyDto):Promise<void> {
