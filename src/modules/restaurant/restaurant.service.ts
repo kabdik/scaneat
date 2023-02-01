@@ -50,10 +50,12 @@ export class RestaurantService {
   public async getAll(userId:number, status:VerificationStatus):Promise<Restaurant[]> {
     return <Promise<Restaurant[]>> this.restaurantRepository.query(
       `
-      SELECT r.* 
+      SELECT r.*, p.* 
         FROM ${TableName.RESTAURANT} AS r 
         INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro 
         ON r.id=ro."restaurantId"
+        LEFT JOIN ${TableName.PHOTO} as p
+        on r."photoId" = p.id
         WHERE ro."userId"=$1
         AND r."verificationStatus"=$2
         `,

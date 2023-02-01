@@ -47,7 +47,7 @@ export class ProductService {
 
   public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
     return <Promise<Product[]>> this.productRepository.manager.query(`
-      SELECT pr.*, p."originalUrl"
+      SELECT pr.*, p.*
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
         ON pr."photoId" = p.id
         where pr."categoryId" = $1
