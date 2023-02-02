@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
-import type { Product } from '@/modules/product/interface/product.interface';
-import { ProductService } from '@/modules/product/product.service';
 
 import { UserRoleType } from '../../user/enums/user-role.enum';
 import { CategoryService } from '../category.service';
@@ -11,19 +10,20 @@ import { UpdateCategoryBodyDto } from '../dto/update-category.body.dto';
 import type { Category } from '../interfaces/category.interface';
 
 @UseAuth(UserRoleType.RESTAURANT_OWNER)
-@Controller('management/category')
-export class CategoryManagementController {
+@Controller('restaurant/:restaurantId/category')
+export class CategoryController {
   constructor(
     private readonly categoryService:CategoryService,
-    private readonly productService:ProductService,
   ) {}
 
-  @Get('/:categoryId/product')
-  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
-    return this.productService.getCategoryProducts(categoryId);
+  @ApiOperation({ summary: 'Get categories of restaurant for owner' })
+  @Get('')
+  public async getRestaurantCategories(@Param('restaurantId') restaurantId:number):Promise<Category[]> {
+    return this.categoryService.getCategories(restaurantId);
   }
 
-  @Post('/:restaurantId')
+  @ApiOperation({ summary: 'Add category to restaurant for owner' })
+  @Post('')
   public async addCategory(
     @Param('restaurantId') restaurantId:number,
       @Body() data:AddCategoryBodyDto,
@@ -31,11 +31,13 @@ export class CategoryManagementController {
     return this.categoryService.addCategory({ ...data, restaurantId });
   }
 
+  @ApiOperation({ summary: 'Delete category of restaurant for owner' })
   @Delete('/:categoryId')
   public async deleteCategory(@Param('categoryId') categoryId:number): Promise<void> {
     return this.categoryService.deleteCategory(categoryId);
   }
 
+  @ApiOperation({ summary: 'Update category of restaurant for owner' })
   @Patch('/:categoryId')
   public async updateCategory(@Param('categoryId') categoryId:number, @Body() data:UpdateCategoryBodyDto):Promise<void> {
     return this.categoryService.updateCategory(categoryId, data);

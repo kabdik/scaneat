@@ -1,6 +1,10 @@
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class AddProductBodyDto{
+    @IsNumber()
+    @IsNotEmpty()
+    categoryId!: number
+
     @IsString()
     @IsNotEmpty()
     name!: string
@@ -19,9 +23,7 @@ export class AddProductBodyDto{
 }
 
 export class AddProductWithCategoryDto extends AddProductBodyDto{
-    @IsNumber()
-    @IsNotEmpty()
-    categoryId!: number
+
 
     @IsString()
     @IsNotEmpty()

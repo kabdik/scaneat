@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
 
@@ -9,26 +10,34 @@ import type { Product } from '../interface/product.interface';
 import { ProductService } from '../product.service';
 
 @UseAuth(UserRoleType.RESTAURANT_OWNER)
-@Controller('management/product')
-export class ProductManagementController {
+@Controller('restaurant/:restaurantId')
+export class ProductController {
   constructor(private readonly productService:ProductService) {}
 
-  @Post('/:restaurantId/:categoryId')
+  @ApiOperation({ summary: 'Add product to restaurant for owner' })
+  @Post('/product')
   public async addProduct(
     @Body() data:AddProductBodyDto,
-      @Param('categoryId') categoryId:number,
       @Param('restaurantId') restaurantId:number,
   ): Promise<Product> {
-    return this.productService.addProduct({ ...data, categoryId, restaurantId });
+    return this.productService.addProduct({ ...data, restaurantId });
   }
 
-  @Delete('/:productId')
+  @ApiOperation({ summary: 'Delete product of restaurant for owner' })
+  @Delete('/product/:productId')
   public async deleteProduct(@Param('productId') productId:number): Promise<void> {
     return this.productService.deleteProduct(productId);
   }
 
-  @Patch('/:productId')
+  @ApiOperation({ summary: 'Delete update of restaurant for owner' })
+  @Patch('/product/:productId')
   public async updateProduct(@Param('productId') productId:number, @Body() data:UpdateProductBodyDto): Promise<void> {
     return this.productService.updateProduct(productId, data);
+  }
+
+  @ApiOperation({ summary: 'Get products of restaurant category for owner' })
+  @Get('category/:categoryId/product')
+  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
+    return this.productService.getCategoryProducts(categoryId);
   }
 }
