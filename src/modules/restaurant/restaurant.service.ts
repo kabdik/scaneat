@@ -97,6 +97,9 @@ export class RestaurantService {
       throw new BadRequestException('There is no restaurant with this slug');
     }
 
+    if (restaurant.verificationStatus !== 'pending') {
+      throw new BadRequestException('The restaurant create request was already accepted');
+    }
     restaurant.verificationStatus = VerificationStatus.ACCEPTED;
     await this.restaurantRepository.save(restaurant);
   }
@@ -106,6 +109,10 @@ export class RestaurantService {
       relations: ['restaurantOwner'] });
     if (!restaurant) {
       throw new BadRequestException('There is no restaurant with this slug');
+    }
+
+    if (restaurant.verificationStatus !== 'pending') {
+      throw new BadRequestException('The restaurant create request was already accepted');
     }
 
     restaurant.verificationStatus = VerificationStatus.REJECTED;
