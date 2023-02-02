@@ -36,6 +36,7 @@ export class AuthService {
     res.cookie('access_token', token.access_token, cookieOptions);
     res.cookie('refresh_token', token.refresh_token, cookieOptions);
     res.cookie('user_id', user.userId, cookieOptions);
+    res.cookie('user_role', user.role, cookieOptions);
   }
 
   public jwtSign(data:UserPayload): JwtSign {
