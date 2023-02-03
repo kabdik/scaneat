@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Param } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
@@ -45,13 +45,24 @@ export class ProductService {
     }
   }
 
-  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
-    return <Promise<Product[]>> this.productRepository.manager.query(`
+  public async getCategoryProducts(categoryId:number, name:string):Promise<Product[] | Product> {
+    const params: Array<number | string> = [categoryId];
+    let query = `    
       SELECT pr.id, pr.name, pr.description, pr.price, pr."restaurantId", pr."categoryId", pr."isDeleted",
       p."originalUrl", p.thumbnails
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
         ON pr."photoId" = p.id
-        where pr."categoryId" = $1
-    `, [categoryId]);
+        where pr."categoryId" = $1 
+        `;
+
+    if (name) {
+      query += 'AND pr.name = $2';
+      params.push(name);
+    }
+    const products = <Product[]> await this.productRepository.manager.query(query, params);
+    if (products.length === 1) {
+      return products[0];
+    }
+    return products;
   }
 }

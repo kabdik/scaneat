@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
@@ -36,8 +36,11 @@ export class ProductController {
   }
 
   @ApiOperation({ summary: 'Get products of restaurant category for owner' })
-  @Get('category/:categoryId/product')
-  public async getCategoryProducts(@Param('categoryId') categoryId:number):Promise<Product[]> {
-    return this.productService.getCategoryProducts(categoryId);
+  @Get('product')
+  public async getCategoryProducts(
+    @Query('categoryId') categoryId:number,
+      @Query('name') name:string,
+  ):Promise<Product[] | Product> {
+    return this.productService.getCategoryProducts(categoryId, name);
   }
 }
