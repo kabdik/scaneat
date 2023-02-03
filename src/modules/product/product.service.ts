@@ -45,20 +45,29 @@ export class ProductService {
     }
   }
 
-  public async getCategoryProducts(categoryId:number, name?:string):Promise<Product[]> {
-    const params: Array<number | string> = [categoryId];
+  public async getCategoryProducts(categoryId?:number, name?:string):Promise<Product[]> {
+    const params: Array<number | string> = [];
     let query = `    
       SELECT pr.id, pr.name, pr.description, pr.price, pr."restaurantId", pr."categoryId", pr."isDeleted",
       p."originalUrl", p.thumbnails
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
-        ON pr."photoId" = p.id
-        where pr."categoryId" = $1 
+        ON pr."photoId" = p.id 
         `;
 
-    if (name) {
-      query += 'AND pr.name = $2';
+    if (categoryId && name) {
+      query += 'WHERE pr."categoryId" = $1 AND pr.name = $2 ';
+
+      params.push(categoryId, name);
+    } else if (categoryId) {
+      query += 'WHERE pr."categoryId" = $1';
+
+      params.push(categoryId);
+    } else if (name) {
+      query += 'WHERE pr."name" = $1';
+
       params.push(name);
     }
+
     return <Product[]> await this.productRepository.manager.query(query, params);
   }
 }

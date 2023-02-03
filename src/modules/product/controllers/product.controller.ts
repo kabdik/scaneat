@@ -38,7 +38,7 @@ export class ProductController {
   @ApiOperation({ summary: 'Get products of restaurant category for owner' })
   @Get('product')
   public async getCategoryProducts(
-    @Query('categoryId') categoryId:number,
+    @Query('categoryId') categoryId?:number,
       @Query('name') name?:string,
   ):Promise<Product[]> {
     return this.productService.getCategoryProducts(categoryId, name);
