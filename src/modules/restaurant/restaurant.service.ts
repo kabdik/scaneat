@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as qrcode from 'qrcode';
 import type { EntityManager, Repository } from 'typeorm';
@@ -27,7 +27,7 @@ export class RestaurantService {
   public async getMenu(restaurantSlug:string): Promise<CategoryWithProduct[]> {
     const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug } });
     if (!restaurant) {
-      throw new BadRequestException('There is no restaurant with such slug');
+      throw new NotFoundException('There is no restaurant with such slug');
     }
 
     const { id: restaurantId } = restaurant;
@@ -37,7 +37,7 @@ export class RestaurantService {
   public async getRestaurantbySlug(restaurantSlug:string):Promise<Restaurant> {
     const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug } });
     if (!restaurant) {
-      throw new BadRequestException('There is no store with such slug');
+      throw new NotFoundException('There is no store with such slug');
     }
     return restaurant;
   }
@@ -56,7 +56,7 @@ export class RestaurantService {
         INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro 
         ON r.id=ro."restaurantId"
         LEFT JOIN ${TableName.PHOTO} as p
-        on r."photoId" = p.id
+        ON r."photoId" = p.id
         WHERE ro."userId"=$1 
         `;
     if (status) {
@@ -84,17 +84,32 @@ export class RestaurantService {
     return entityManager.save(RestaurantEntity, restaurantData);
   }
 
-  public async getAllRestaurantRequests(verificationStatus:VerificationStatus):Promise<RestaurantWithOwner[]> {
-    return <RestaurantWithOwner[]> await this.restaurantRepository.find({
-      where: { verificationStatus },
-      relations: ['restaurantOwner'] });
+  public async getAllRestaurantRequests(verificationStatus?:VerificationStatus):Promise<RestaurantWithOwner[]> {
+    const params:Array<VerificationStatus> = [];
+    let query = `
+      SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
+      r."isActive", r."verificationStatus", p."originalUrl", p.thumbnails, 
+      u.name AS "OwnerName" , u.surname AS "OwnerSurname", u.phone AS "OwnerPhone" 
+        FROM ${TableName.RESTAURANT} AS r
+        INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro
+        ON r.id=ro."restaurantId"
+        INNER JOIN public.${TableName.USER} as u
+        on ro."userId"=u.id
+        LEFT JOIN ${TableName.PHOTO} as p
+        ON r."photoId" = p.id 
+        `;
+    if (verificationStatus) {
+      query += 'WHERE r."verificationStatus" = $1 ';
+      params.push(verificationStatus);
+    }
+    return <Promise<RestaurantWithOwner[]>> this.restaurantRepository.manager.query(query, params);
   }
 
   public async verifyRestaurantRequest(restaurantId:number):Promise<void> {
     const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
       relations: ['restaurantOwner'] });
     if (!restaurant) {
-      throw new BadRequestException('There is no restaurant with this slug');
+      throw new NotFoundException('There is no restaurant with this slug');
     }
 
     if (restaurant.verificationStatus !== 'pending') {
@@ -108,7 +123,7 @@ export class RestaurantService {
     const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
       relations: ['restaurantOwner'] });
     if (!restaurant) {
-      throw new BadRequestException('There is no restaurant with this slug');
+      throw new NotFoundException('There is no restaurant with this slug');
     }
 
     if (restaurant.verificationStatus !== 'pending') {
@@ -122,7 +137,7 @@ export class RestaurantService {
   public async updateRestaurant(restaurantId:number, data:UpdateRestaurantBodyDto):Promise<void> {
     const { affected } = await this.restaurantRepository.update(restaurantId, data);
     if (affected === 0) {
-      throw new BadRequestException('Ресторана с таким id не существует');
+      throw new NotFoundException('Ресторана с таким id не существует');
     }
   }
 }

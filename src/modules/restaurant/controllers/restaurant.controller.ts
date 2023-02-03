@@ -23,7 +23,7 @@ export class RestaurantController {
   @ApiOperation({ summary: 'Get restaurant create requests for admin or system manager' })
   @UseAuth(UserRoleType.ADMIN, UserRoleType.SYSTEM_MANAGER)
   @Get('requests')
-  public async getAllRestaurantRequests(@Query('status') status:VerificationStatus):Promise<RestaurantWithOwner[]> {
+  public async getAllRestaurantRequests(@Query('status') status?:VerificationStatus):Promise<RestaurantWithOwner[]> {
     return this.restaurantService.getAllRestaurantRequests(status);
   }
 
