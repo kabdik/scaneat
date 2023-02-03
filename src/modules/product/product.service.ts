@@ -45,7 +45,7 @@ export class ProductService {
     }
   }
 
-  public async getCategoryProducts(categoryId:number, name:string):Promise<Product[] | Product> {
+  public async getCategoryProducts(categoryId:number, name?:string):Promise<Product[]> {
     const params: Array<number | string> = [categoryId];
     let query = `    
       SELECT pr.id, pr.name, pr.description, pr.price, pr."restaurantId", pr."categoryId", pr."isDeleted",
@@ -59,10 +59,6 @@ export class ProductService {
       query += 'AND pr.name = $2';
       params.push(name);
     }
-    const products = <Product[]> await this.productRepository.manager.query(query, params);
-    if (products.length === 1) {
-      return products[0];
-    }
-    return products;
+    return <Product[]> await this.productRepository.manager.query(query, params);
   }
 }

@@ -39,8 +39,8 @@ export class ProductController {
   @Get('product')
   public async getCategoryProducts(
     @Query('categoryId') categoryId:number,
-      @Query('name') name:string,
-  ):Promise<Product[] | Product> {
+      @Query('name') name?:string,
+  ):Promise<Product[]> {
     return this.productService.getCategoryProducts(categoryId, name);
   }
 }
