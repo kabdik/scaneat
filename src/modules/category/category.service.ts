@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 
@@ -15,8 +15,8 @@ export class CategoryService {
 
   public async getCategoriesWithProducts(restaurantId:number):Promise<CategoryWithProduct[]> {
     return <CategoryWithProduct[]> await this.categoryRepository.find({
-      where: { restaurantId },
-      relations: ['products'] });
+      relations: ['products'],
+      where: { restaurantId, isDeleted: false, products: { isDeleted: false } } });
   }
 
   public async addCategory(data: AddCategoryWithRestaurantDto):Promise<Category> {
@@ -37,7 +37,7 @@ export class CategoryService {
       SELECT c.*, COUNT(pr.id) AS "numberOfProducts"
         FROM ${TableName.CATEGORY} AS c LEFT JOIN ${TableName.PRODUCT} AS pr 
         ON c.id = pr."categoryId"
-        WHERE c."restaurantId"=$1
+        WHERE c."restaurantId"=$1 AND c."isDeleted" = false
         GROUP BY c.id
         `,
       [restaurantId],
@@ -47,7 +47,7 @@ export class CategoryService {
   public async deleteCategory(cateroryId:number):Promise<void> {
     const category = await this.categoryRepository.findOneBy({ id: cateroryId });
     if (!category) {
-      throw new BadRequestException('Категории с таким id не существует');
+      throw new NotFoundException('Категории с таким id не существует');
     }
     category.isDeleted = true;
     category.isActive = false;
@@ -57,7 +57,7 @@ export class CategoryService {
   public async updateCategory(categoryId:number, data:UpdateCategoryBodyDto):Promise<void> {
     const { affected } = await this.categoryRepository.update(categoryId, data);
     if (affected === 0) {
-      throw new BadRequestException('Категории с таким id не существует');
+      throw new NotFoundException('Категории с таким id не существует');
     }
   }
 }

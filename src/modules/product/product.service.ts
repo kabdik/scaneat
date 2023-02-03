@@ -52,7 +52,7 @@ export class ProductService {
       p."originalUrl", p.thumbnails
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
         ON pr."photoId" = p.id 
-        WHERE pr."restaurantId" = $1 
+        WHERE pr."restaurantId" = $1  AND pr."isDeleted" = false
         `;
 
     if (categoryId) {
