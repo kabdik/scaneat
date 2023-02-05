@@ -33,6 +33,7 @@ deploy:migration_dev:
       - development
     changes: 
       - src/db/typeorm-migrations/*
+      - ansible/playbooks/migrate.yml
   script: 
     - ansible-playbook -i $DEV_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/migrate.yml 
   needs:
