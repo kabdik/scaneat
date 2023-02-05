@@ -49,7 +49,7 @@ export class ProductService {
     const params: Array<number | string> = [restaurantId];
     let query = `    
       SELECT pr.id, pr.name, pr.description, pr.price, pr."restaurantId", pr."categoryId", pr."isDeleted",
-      p."originalUrl", p.thumbnails
+      pr."photoId", p."originalUrl", p.thumbnails
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
         ON pr."photoId" = p.id 
         WHERE pr."restaurantId" = $1  AND pr."isDeleted" = false
