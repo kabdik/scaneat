@@ -37,7 +37,14 @@ export class RestaurantService {
   }
 
   public async getRestaurantbySlug(restaurantSlug:string):Promise<Restaurant> {
-    const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug } });
+    const restaurant = <Restaurant> await this.restaurantRepository.manager.query(`
+      SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
+      r."isActive", r."verificationStatus", r."photoId", p."originalUrl", p.thumbnails 
+        FROM ${TableName.RESTAURANT} AS r 
+        LEFT JOIN ${TableName.PHOTO} as p
+        ON r."photoId" = p.id
+        WHERE r.slug=$1 
+    `, [restaurantSlug]);
     if (!restaurant) {
       throw new NotFoundException('There is no store with such slug');
     }
