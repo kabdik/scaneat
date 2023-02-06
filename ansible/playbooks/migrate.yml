@@ -4,7 +4,8 @@
 
   tasks:
     - name: Run yarn install
-      shell: docker run --rm -v {{ deploy_folder }}:/app -w /app node:16 bash -c "yarn install"
+      yarn: 
+        path: '{{deploy_folder}}'
 
     - name: Run migration
       shell: docker run --rm --network scaneat -v {{ deploy_folder }}:/app -w /app node:16 bash -c "yarn migration:run"
