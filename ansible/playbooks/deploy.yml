@@ -1,6 +1,6 @@
 - hosts: all
   vars:
-    deploy_folder: /home/ubuntu/scaneat/scaneat
+    deploy_folder: /home/techbridge/scaneat/scaneat
 
   tasks:
     - name: Copy files to the server
