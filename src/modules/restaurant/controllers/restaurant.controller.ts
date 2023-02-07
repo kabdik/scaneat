@@ -41,9 +41,9 @@ export class RestaurantController {
 
   @ApiOperation({ summary: 'Get restaurant QRCode for owner' })
   @UseAuth(UserRoleType.RESTAURANT_OWNER)
-  @Get(':restaurantSlug/qr')
-  public async generateQR(@Param('restaurantSlug') restaurantSlug:string, @Res() res:Response): Promise<void> {
-    const qrCode = await this.restaurantService.generateQR(restaurantSlug);
+  @Get(':restaurantId/qr')
+  public async generateQR(@Param('restaurantId') restaurantId:number, @Res() res:Response): Promise<void> {
+    const qrCode = await this.restaurantService.generateQR(restaurantId);
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', 'attachment; filename=qr-code.png');
     res.send(qrCode);

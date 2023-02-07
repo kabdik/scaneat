@@ -51,8 +51,12 @@ export class RestaurantService {
     return restaurant;
   }
 
-  public async generateQR(restaurantSlug:string):Promise<Buffer> {
-    const url = `http://localhost:3001/restaurant/${restaurantSlug}/menu`;
+  public async generateQR(restaurantId:number):Promise<Buffer> {
+    const restaurant = await this.restaurantRepository.findOneBy({ id: restaurantId });
+    if (!restaurant) {
+      throw new NotFoundException('Такого ресторана не существует');
+    }
+    const url = `http://localhost:3001/restaurant/${restaurant.slug}/menu`;
     return qrcode.toBuffer(url);
   }
 
