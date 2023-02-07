@@ -1,6 +1,5 @@
 stages:
   - deploy
-  - migration
 
 before_script:
   - ansible --version
@@ -17,7 +16,7 @@ deploy:deploy_dev:
       - development
     changes: 
       - src/**/*
-      - ansible/playbooks/deploy.yml
+      - ansible/**/*
       - Dockerfile
       - package.json
       - yarn.lock
@@ -27,16 +26,19 @@ deploy:deploy_dev:
     - cat $APP_ENV_FILE_DEV > .env
     - ansible-playbook -i $DEV_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/deploy.yml 
   
-migration:dev:
-  stage: migration
+deploy:migration_dev:
+  stage: deploy
   only: 
     refs:
       - development
     changes: 
       - src/db/typeorm-migrations/*
+      - .gitlab-ci.yml
       - ansible/playbooks/migrate.yml
   script: 
-    - ansible-playbook -i $DEV_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/migrate.yml
+    - ansible-playbook -i $DEV_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/migrate.yml 
+  needs:
+    - deploy:deploy_dev
 
 deploy:deploy_prod: 
   stage: deploy
@@ -46,7 +48,7 @@ deploy:deploy_prod:
       - master
     changes: 
       - src/**/*
-      - ansible/playbooks/deploy.yml
+      - ansible/**/*
       - Dockerfile
       - package.json
       - yarn.lock
@@ -56,13 +58,16 @@ deploy:deploy_prod:
     - cat $APP_ENV_FILE_PROD > .env
     - ansible-playbook -i $PROD_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/deploy.yml 
   
-migration:prod:
-  stage: migration
+deploy:migration_prod:
+  stage: deploy
   only: 
     refs:
       - master
     changes: 
       - src/db/typeorm-migrations/*
+      - .gitlab-ci.yml
       - ansible/playbooks/migrate.yml
   script: 
-    - ansible-playbook -i $PROD_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/migrate.yml
+    - ansible-playbook -i $PROD_INVENTORY --private-key secret/ansible.key ./ansible/playbooks/migrate.yml 
+  needs:
+    - deploy:deploy_prod
