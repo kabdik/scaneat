@@ -30,7 +30,7 @@ export class RestaurantService {
       throw new NotFoundException('There is no restaurant with such slug');
     }
     if (!restaurant.isActive) {
-      throw new BadRequestException('The restaurant is not active');
+      throw new NotFoundException('The restaurant is not active');
     }
     const { id: restaurantId } = restaurant;
     return this.categoryService.getCategoriesWithProducts(restaurantId);
