@@ -6,3 +6,9 @@ export interface OrderAddress extends BaseEntity {
   address:string;
   details:string;
 }
+
+export interface AddressWithDetails {
+  address:string;
+  details:string;
+  cityId:number;
+}

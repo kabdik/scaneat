@@ -2,7 +2,7 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import { TableName } from '@/common/enums/table';
 import { ProductEntity } from '@/modules/product/entitites/product.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import type { OrderProduct } from '../interfaces/order-product.entity';
+import type { OrderProduct } from '../interfaces/order-product.interface';
 import { OrderEntity } from './order.entity';
 
 @Entity(TableName.ORDER_PRODUCT)
