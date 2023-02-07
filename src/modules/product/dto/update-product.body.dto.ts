@@ -11,6 +11,10 @@ export class UpdateProductBodyDto{
 
     @IsNumber()
     @IsOptional()
+    unitPrice?: number
+
+    @IsNumber()
+    @IsOptional()
     price?: number
 
     @IsNumber()

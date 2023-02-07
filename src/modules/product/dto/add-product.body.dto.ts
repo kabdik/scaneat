@@ -15,6 +15,10 @@ export class AddProductBodyDto{
 
     @IsNumber()
     @IsNotEmpty()
+    unitPrice!: number
+    
+    @IsNumber()
+    @IsNotEmpty()
     price!: number
 
     @IsNumber()
