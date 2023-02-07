@@ -7,47 +7,50 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import type { Product } from '../interface/product.interface';
 
 @Entity(TableName.PRODUCT)
-@Index(['name','restaurantId'], {unique:true})
-export class ProductEntity extends BaseEntity implements Product{
-    @Column('varchar', { nullable: false })
-    name!: string;
-    
-    @Column('text')
-    description!: string;
+@Index(['name', 'restaurantId'], { unique: true })
+export class ProductEntity extends BaseEntity implements Product {
+  @Column('varchar', { nullable: false })
+  name!: string;
 
-    @Column('numeric', { precision: 10, scale: 2 })
-    price!: number;
+  @Column('text')
+  description!: string;
 
-    @Column('int')
-    restaurantId!: number;
+  @Column('numeric', { precision: 10, scale: 2 })
+  unitPrice!: number;
 
-    @Column('int')
-    categoryId!: number
+  @Column('numeric', { precision: 10, scale: 2 })
+  price!: number;
 
-    @Column('int', { nullable: true })
-    photoId!:number | null
-    
-    @Column('boolean', { default: false })
-    isDeleted!: boolean;
+  @Column('int')
+  restaurantId!: number;
 
-    @ManyToOne(() => RestaurantEntity,{
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
-    })
-    @JoinColumn({ name: 'restaurantId' })
-    restaurant?: RestaurantEntity
+  @Column('int')
+  categoryId!: number;
 
-    @ManyToOne(() => CategoryEntity, {
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
-    })
-    @JoinColumn({name: 'categoryId' })
-    category?: CategoryEntity
+  @Column('int', { nullable: true })
+  photoId!: number | null;
 
-    @ManyToOne(() => PhotoEntity,{
-        onDelete:'SET NULL',
-        onUpdate:'CASCADE'
-    })
-    @JoinColumn({ name:'photoId'})
-    photo?:PhotoEntity
+  @Column('boolean', { default: false })
+  isDeleted!: boolean;
+
+  @ManyToOne(() => RestaurantEntity, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'restaurantId' })
+  restaurant?: RestaurantEntity;
+
+  @ManyToOne(() => CategoryEntity, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'categoryId' })
+  category?: CategoryEntity;
+
+  @ManyToOne(() => PhotoEntity, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'photoId' })
+  photo?: PhotoEntity;
 }

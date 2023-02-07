@@ -8,6 +8,7 @@ export interface Order extends BaseEntity {
   restaurantId: number;
   profit:number;
   total:number;
+  description:string | null;
   status:OrderStatus;
   type:OrderType;
 }

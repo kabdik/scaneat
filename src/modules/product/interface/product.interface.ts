@@ -5,6 +5,7 @@ export interface Product extends BaseEntity {
   description: string;
   categoryId: number;
   restaurantId: number;
+  unitPrice: number;
   price: number;
   photoId: number | null;
   isDeleted: boolean;

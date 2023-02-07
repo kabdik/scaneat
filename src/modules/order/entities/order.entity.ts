@@ -27,6 +27,9 @@ export class OrderEntity extends BaseEntity implements Order {
   @Column('enum', { enum: OrderType })
   type!: OrderType;
 
+  @Column('text', {nullable:true})
+  description!: string | null
+
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'userId' })
   user?: UserEntity;
