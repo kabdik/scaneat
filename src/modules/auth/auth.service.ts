@@ -7,7 +7,7 @@ import moment from 'moment';
 import { ServerConfig } from '@/config/server.config';
 
 import { UserService } from '../user/user.service';
-import type { JwtPayload, JwtSign, UserPayload } from './auth.interface';
+import type { JwtPayload, JwtSign, UserLogin, UserPayload } from './auth.interface';
 import type { LoginBodyDto } from './dto/login.body.dto';
 
 @Injectable()
@@ -15,8 +15,7 @@ export class AuthService {
   constructor(private jwt:JwtService, private userService:UserService) {}
 
   public async login(res:Response, { email, password }:LoginBodyDto):Promise<void> {
-    const user = await this.userService.getUserByEmail(email);
-
+    const user = <UserLogin> await this.userService.getUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Wrong email or password');
     }

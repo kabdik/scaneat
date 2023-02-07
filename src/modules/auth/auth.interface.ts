@@ -14,3 +14,12 @@ export interface JwtPayload {
   sub: number;
   role: UserRoleType | null;
 }
+
+export interface UserLogin {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  role: UserRoleType;
+  password: string;
+}
