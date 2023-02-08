@@ -4,6 +4,7 @@ import type { Response } from 'express';
 
 import { UseAuth } from '@/common/decorators/auth.decorator';
 import { ReqUser } from '@/common/decorators/req-user.decorator';
+import { RestauranOwner } from '@/common/decorators/restoran-owner.decorator';
 import type { UserPayload } from '@/modules/auth/auth.interface';
 
 import type { CategoryWithProduct } from '../../category/interfaces/category.interface';
@@ -40,7 +41,7 @@ export class RestaurantController {
   }
 
   @ApiOperation({ summary: 'Get restaurant QRCode for owner' })
-  @UseAuth(UserRoleType.RESTAURANT_OWNER)
+  @RestauranOwner()
   @Get(':restaurantId/qr')
   public async generateQR(@Param('restaurantId') restaurantId:number, @Res() res:Response): Promise<void> {
     const qrCode = await this.restaurantService.generateQR(restaurantId);
@@ -56,7 +57,7 @@ export class RestaurantController {
   }
 
   @ApiOperation({ summary: 'Change restaurant details for owner' })
-  @UseAuth(UserRoleType.RESTAURANT_OWNER)
+  @RestauranOwner()
   @Patch('/:restaurantId')
   public async updateRestaurant(@Param('restaurantId') restaurantId:number, @Body() data: UpdateRestaurantBodyDto):Promise<void> {
     return this.restaurantService.updateRestaurant(restaurantId, data);
@@ -77,7 +78,7 @@ export class RestaurantController {
   }
 
   @ApiOperation({ summary: 'Get all restaurants of owner' })
-  @UseAuth(UserRoleType.RESTAURANT_OWNER)
+  @RestauranOwner()
   @Get('')
   public async getAll(@ReqUser() restaurantOwner:UserPayload, @Query('status') status?:VerificationStatus):Promise<Restaurant[]> {
     return this.restaurantService.getAll(restaurantOwner.userId, status);

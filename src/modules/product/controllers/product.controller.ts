@@ -1,15 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
-import { UseAuth } from '@/common/decorators/auth.decorator';
+import { RestauranOwner } from '@/common/decorators/restoran-owner.decorator';
 
-import { UserRoleType } from '../../user/enums/user-role.enum';
 import { AddProductBodyDto } from '../dto/add-product.body.dto';
 import { UpdateProductBodyDto } from '../dto/update-product.body.dto';
 import type { Product } from '../interface/product.interface';
 import { ProductService } from '../product.service';
 
-@UseAuth(UserRoleType.RESTAURANT_OWNER)
+@RestauranOwner()
 @Controller('restaurant/:restaurantId/product')
 export class ProductController {
   constructor(private readonly productService:ProductService) {}

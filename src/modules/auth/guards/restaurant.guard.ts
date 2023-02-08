@@ -24,7 +24,7 @@ export class RestaurantGuard implements CanActivate {
 
     const user = <UserPayload>req.user;
     if (user.role !== UserRoleType.RESTAURANT_OWNER) {
-      return true;
+      return false;
     }
 
     const restaurantOwner = await this.em.findOneBy(RestaurantOwnerEntity, {

@@ -21,15 +21,11 @@ export class RestaurantCategoryGuard implements CanActivate {
     const req:Request = context.switchToHttp().getRequest();
     const restaurantId = Number(req.params['restaurantId']);
     const categoryId = Number(req.params['categoryId']);
-    console.log(restaurantId);
-    console.log(categoryId);
 
     const { userId, role } = <UserPayload>req.user;
     if (role !== UserRoleType.RESTAURANT_OWNER) {
       return true;
     }
-    console.log(userId);
-    console.log(role);
 
     if (!restaurantId) {
       return false;
@@ -52,7 +48,6 @@ export class RestaurantCategoryGuard implements CanActivate {
       whereClause += 'AND c.id = $3';
     }
     const result = <Pick<Restaurant, 'id'>[]> await this.em.query(query + whereClause, params);
-    console.log(result);
 
     return !_.isEmpty(result);
   }

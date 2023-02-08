@@ -1,15 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
-import { UseAuth } from '@/common/decorators/auth.decorator';
+import { RestauranOwner } from '@/common/decorators/restoran-owner.decorator';
 
-import { UserRoleType } from '../../user/enums/user-role.enum';
 import { CategoryService } from '../category.service';
 import { AddCategoryBodyDto } from '../dto/add-category.body.dto';
 import { UpdateCategoryBodyDto } from '../dto/update-category.body.dto';
 import type { Category } from '../interfaces/category.interface';
 
-@UseAuth(UserRoleType.RESTAURANT_OWNER)
+@RestauranOwner()
 @Controller('restaurant/:restaurantId/category')
 export class CategoryController {
   constructor(
