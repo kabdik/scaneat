@@ -8,6 +8,7 @@ export interface Restaurant extends BaseEntity {
   slug: string;
   phone: string | null;
   cityId: number;
+  restaurantOwnerId: number | null;
   hasTakeAway: boolean;
   hasDelivery: boolean;
   isActive: boolean;

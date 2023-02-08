@@ -4,7 +4,7 @@ import { CityEntity } from '@/modules/cities/city.entity';
 import { PhotoEntity } from '@/modules/photo/entities/photo.entity';
 import { RestaurantOwnerEntity } from '@/modules/restaurant-owner/entities/restaurant-owner.entity';
 import type { RestaurantOwner } from '@/modules/restaurant-owner/interfaces/restaurant-owner.intereface';
-import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Check, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { VerificationStatus } from '../enum/verification-status.enum';
 import type { Restaurant } from '../interfaces/restaurant.interface';
 
@@ -22,6 +22,9 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
   @Column('int')
   cityId!: number;
 
+  @Column('int', { nullable:true})
+  restaurantOwnerId!: number | null; 
+  
   @Column('text', { nullable: true })
   address!: string | null;
 
@@ -58,6 +61,10 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
   @JoinColumn({ name: 'photoId' })
   photo?: PhotoEntity;
 
-  @OneToMany(() => RestaurantOwnerEntity, (restaurantOwner) => restaurantOwner.restaurant)
+  @ManyToOne(() => RestaurantOwnerEntity,{
+    onDelete:'SET NULL',
+    onUpdate:'CASCADE'
+  })
+  @JoinColumn({name:'restaurantOwnerId'})
   restaurantOwner!: RestaurantOwner;
 }
