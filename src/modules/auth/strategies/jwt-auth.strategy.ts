@@ -25,10 +25,13 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt-auth') {
     });
   }
 
-  public validate(payload:JwtPayload):UserPayload {
+  public validate({ sub, ...payload }:JwtPayload):UserPayload {
     if (payload === null) {
       throw new UnauthorizedException();
     }
-    return { userId: payload.sub, role: payload.role };
+    return {
+      userId: sub,
+      ...payload,
+    };
   }
 }

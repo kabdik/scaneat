@@ -8,7 +8,7 @@ import { TableName } from '@/common/enums/table';
 import type { Restaurant } from '@/modules/restaurant/interfaces/restaurant.interface';
 import { UserRoleType } from '@/modules/user/enums/user-role.enum';
 
-import type { UserPayload } from '../auth.interface';
+import type { OwnerPayload } from '../auth.interface';
 
 @Injectable()
 export class RestaurantCategoryGuard implements CanActivate {
@@ -22,7 +22,7 @@ export class RestaurantCategoryGuard implements CanActivate {
     const restaurantId = Number(req.params['restaurantId']);
     const categoryId = Number(req.params['categoryId']);
 
-    const { userId, role } = <UserPayload>req.user;
+    const { role, restaurantOwnerId } = <OwnerPayload>req.user;
     if (role !== UserRoleType.RESTAURANT_OWNER) {
       return true;
     }
@@ -30,20 +30,20 @@ export class RestaurantCategoryGuard implements CanActivate {
     if (!restaurantId) {
       return false;
     }
-    const params:Array<string | number> = [restaurantId, userId];
+    const params:Array<string | number> = [restaurantId, restaurantOwnerId];
 
     let query = `
-        SELECT ro."restaurantId"
-        FROM ${TableName.RESTAURANT_OWNER} AS ro    
+        SELECT r.id
+        FROM ${TableName.RESTAURANT} AS r   
     `;
 
-    let whereClause = 'WHERE ro."restaurantId" = $1 AND ro."userId" = $2 ';
+    let whereClause = 'WHERE r.id = $1 AND r."restaurantOwnerId" = $2 ';
 
     if (categoryId) {
       params.push(categoryId);
       query += `
         INNER JOIN ${TableName.CATEGORY} as c
-        ON ro."restaurantId" = c."restaurantId"
+        ON r.id = c."restaurantId"
       `;
       whereClause += 'AND c.id = $3';
     }

@@ -6,7 +6,7 @@ import { EntityManager } from 'typeorm';
 import { RestaurantOwnerEntity } from '@/modules/restaurant-owner/entities/restaurant-owner.entity';
 import { UserRoleType } from '@/modules/user/enums/user-role.enum';
 
-import type { UserPayload } from '../auth.interface';
+import type { OwnerPayload } from '../auth.interface';
 
 @Injectable()
 export class RestaurantGuard implements CanActivate {
@@ -22,14 +22,14 @@ export class RestaurantGuard implements CanActivate {
       return false;
     }
 
-    const user = <UserPayload>req.user;
+    const user = <OwnerPayload>req.user;
+
     if (user.role !== UserRoleType.RESTAURANT_OWNER) {
       return false;
     }
 
     const restaurantOwner = await this.em.findOneBy(RestaurantOwnerEntity, {
-      userId: user.userId,
-      restaurantId,
+      id: user.restaurantOwnerId,
     });
     return !(!restaurantOwner);
   }

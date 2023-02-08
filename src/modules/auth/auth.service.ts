@@ -1,29 +1,49 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectEntityManager } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import type { Response } from 'express';
 import moment from 'moment';
+import type { EntityManager } from 'typeorm';
 
 import { ServerConfig } from '@/config/server.config';
 
+import { RestaurantOwnerEntity } from '../restaurant-owner/entities/restaurant-owner.entity';
+import type { RestaurantOwner } from '../restaurant-owner/interfaces/restaurant-owner.intereface';
+import { UserRoleType } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
 import type { JwtPayload, JwtSign, UserLogin, UserPayload } from './auth.interface';
 import type { LoginBodyDto } from './dto/login.body.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwt:JwtService, private userService:UserService) {}
+  constructor(
+    @InjectEntityManager()
+    private em: EntityManager,
+    private jwt: JwtService,
+    private userService: UserService,
+  ) {}
 
-  public async login(res:Response, { email, password }:LoginBodyDto):Promise<void> {
+  public async login(res: Response, { email, password }: LoginBodyDto): Promise<void> {
     const user = <UserLogin> await this.userService.getUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Wrong email or password');
     }
 
-    this.setAuthCookie(res, { userId: user.id, role: user.role });
+    const userPayload: UserPayload = {
+      userId: user.id,
+      role: user.role,
+    };
+
+    if (user.role === UserRoleType.RESTAURANT_OWNER) {
+      const { id: restaurantOwnerId } = <RestaurantOwner> await this.em.findOneBy(RestaurantOwnerEntity, { userId: user.id });
+      userPayload.restaurantOwnerId = restaurantOwnerId;
+    }
+
+    this.setAuthCookie(res, userPayload);
   }
 
-  public setAuthCookie(res:Response, user: UserPayload): void {
+  public setAuthCookie(res: Response, user: UserPayload): void {
     const token = this.jwtSign(user);
 
     const cookieOptions = {
@@ -38,18 +58,25 @@ export class AuthService {
     res.cookie('user_role', user.role, cookieOptions);
   }
 
-  public jwtSign(data:UserPayload): JwtSign {
-    const payload: JwtPayload = { sub: data.userId, role: data.role };
+  public jwtSign({ userId, ...data }: UserPayload): JwtSign {
+    const payload = <JwtPayload> {
+      sub: userId,
+      ...data,
+    };
+
     return {
       access_token: this.jwt.sign(payload),
       refresh_token: this.getRefreshToken(payload.sub),
     };
   }
 
-  public getRefreshToken(sub:number): string {
-    return this.jwt.sign({ sub }, {
-      secret: ServerConfig.JWT_REFRESH_SECRET,
-      expiresIn: `${ServerConfig.JWT_SECRET_TTL_IN_DAYS} days`,
-    });
+  public getRefreshToken(sub: number): string {
+    return this.jwt.sign(
+      { sub },
+      {
+        secret: ServerConfig.JWT_REFRESH_SECRET,
+        expiresIn: `${ServerConfig.JWT_SECRET_TTL_IN_DAYS} days`,
+      },
+    );
   }
 }

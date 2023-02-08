@@ -3,6 +3,14 @@ import type { UserRoleType } from '../user/enums/user-role.enum';
 export interface UserPayload {
   userId: number;
   role: UserRoleType | null;
+  restaurantOwnerId?: number;
+  restaurantStaffId?: number;
+}
+
+export interface OwnerPayload {
+  userId: number;
+  role: UserRoleType | null;
+  restaurantOwnerId: number;
 }
 
 export interface JwtSign {
@@ -13,6 +21,8 @@ export interface JwtSign {
 export interface JwtPayload {
   sub: number;
   role: UserRoleType | null;
+  restaurantOwnerId?: number;
+  restaurantStaffId?: number;
 }
 
 export interface UserLogin {
