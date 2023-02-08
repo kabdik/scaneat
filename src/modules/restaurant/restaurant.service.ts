@@ -37,7 +37,7 @@ export class RestaurantService {
   }
 
   public async getRestaurantbySlug(restaurantSlug:string):Promise<Restaurant> {
-    const restaurant = <Restaurant> await this.restaurantRepository.manager.query(`
+    const [restaurant] = <Restaurant[]> await this.restaurantRepository.manager.query(`
       SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
       r."isActive", r."verificationStatus", r."photoId", p."originalUrl", p.thumbnails 
         FROM ${TableName.RESTAURANT} AS r 
