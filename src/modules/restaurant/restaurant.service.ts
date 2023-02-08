@@ -60,17 +60,15 @@ export class RestaurantService {
     return qrcode.toBuffer(url);
   }
 
-  public async getAll(userId:number, status?:VerificationStatus):Promise<Restaurant[]> {
-    const params: Array<string | number> = [userId];
+  public async getAll(restaurantOwnerId:number, status?:VerificationStatus):Promise<Restaurant[]> {
+    const params: Array<string | number> = [restaurantOwnerId];
     let query = `
       SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
       r."isActive", r."verificationStatus", p."originalUrl", p.thumbnails 
         FROM ${TableName.RESTAURANT} AS r 
-        INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro 
-        ON r.id=ro."restaurantId"
         LEFT JOIN ${TableName.PHOTO} as p
         ON r."photoId" = p.id
-        WHERE ro."userId"=$1 
+        WHERE r."restaurantOwnerId"=$1 
         `;
     if (status) {
       query += 'AND r."verificationStatus"=$2';

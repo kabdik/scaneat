@@ -1,24 +1,23 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
-import type {RestaurnatStaffRole } from "../enums/restaurant-staff-role.enum"
-export class CreateStaffBodyDto{
-    @IsString()
-    @IsNotEmpty()
-    name!:string;
-    
-    
-    @IsString()
-    @IsNotEmpty()
-    surname!: string;  
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import type { RestaurnatStaffRole } from '../enums/restaurant-staff-role.enum';
+export class CreateStaffBodyDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    email!:string;
+  @IsString()
+  @IsNotEmpty()
+  surname!: string;
 
-    @IsString()
-    @IsOptional()
-    phone!:string | null;
+  @IsString()
+  @IsNotEmpty()
+  email!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    role!:RestaurnatStaffRole;
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  role!: RestaurnatStaffRole;
 }
