@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { EntityManager, Repository } from 'typeorm';
 
+import { UserEntity } from '../user/entities/user.entity';
 import { UserRoleType } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
 import type { CreateRestaurantOwnerBodyDto } from './dto/create-restaurant-owner.body.dto';
@@ -17,8 +18,7 @@ export class RestaurantOwnerService {
 
   public async createRestaurantOwner({ restaurantId, ...data }:CreateRestaurantOwnerBodyDto, em?:EntityManager):Promise<void> {
     const entityManager = em || this.restaurantOwnerRepository.manager;
-
-    let user = await this.userService.getUserByEmail(data.email);
+    let user = await entityManager.findOneBy(UserEntity, { email: data.email, phone: data.phone });
     if (!user) {
       user = await this.userService.createUser({ ...data, role: UserRoleType.RESTAURANT_OWNER }, entityManager);
     }

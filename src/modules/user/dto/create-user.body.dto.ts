@@ -16,7 +16,7 @@ export class CreateUserBodyDto{
 
     @IsString()
     @IsOptional()
-    phone!:string | null;
+    phone?:string;
 
     @IsString()
     @IsOptional()

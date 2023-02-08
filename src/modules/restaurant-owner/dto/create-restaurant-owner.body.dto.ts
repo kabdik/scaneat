@@ -15,7 +15,7 @@ export class CreateRestaurantOwnerRequestBodyDto{
 
     @IsString()
     @IsOptional()
-    phone!:string | null;
+    phone?:string;
     
 }
 
