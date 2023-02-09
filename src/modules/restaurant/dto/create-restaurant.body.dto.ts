@@ -33,3 +33,10 @@ export class CreateRestaurantBodyDto{
     @IsOptional()
     photoId!: number | null
 }
+
+
+export class CreateRestaurantWithOwnerDto extends CreateRestaurantBodyDto{
+    @IsNotEmpty()
+    @IsNumber()
+    restaurantOwnerId!:number
+}

@@ -10,6 +10,7 @@ import type { OwnerPayload } from '@/modules/auth/auth.interface';
 import type { CategoryWithProduct } from '../../category/interfaces/category.interface';
 import { UserRoleType } from '../../user/enums/user-role.enum';
 import { CreateRestaurantRequestBodyDto } from '../dto/create-restaurant-request.body.dto';
+import { CreateRestaurantBodyDto } from '../dto/create-restaurant.body.dto';
 import { UpdateRestaurantBodyDto } from '../dto/update-restaurant.body.dto';
 import type { VerificationStatus } from '../enum/verification-status.enum';
 import type { Restaurant, RestaurantWithOwner } from '../interfaces/restaurant.interface';
@@ -54,6 +55,12 @@ export class RestaurantController {
   @Post('')
   public async createRestaurantRequest(@Body() data: CreateRestaurantRequestBodyDto):Promise<void> {
     await this.restaurantService.createRestaurantRequest(data);
+  }
+
+  @Post('owner/request')
+  @UseAuth(UserRoleType.RESTAURANT_OWNER)
+  public async createAuthRestaurantRequest(@ReqUser() restaurantOwner:OwnerPayload, @Body() data:CreateRestaurantBodyDto): Promise<void> {
+    await this.restaurantService.createRestaurant({ ...data, restaurantOwnerId: restaurantOwner.restaurantOwnerId });
   }
 
   @ApiOperation({ summary: 'Change restaurant details for owner' })

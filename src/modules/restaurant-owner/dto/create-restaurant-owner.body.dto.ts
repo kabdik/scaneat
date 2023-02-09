@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateRestaurantOwnerRequestBodyDto{
     @IsString()
@@ -17,10 +17,4 @@ export class CreateRestaurantOwnerRequestBodyDto{
     @IsOptional()
     phone?:string;
     
-}
-
-export class CreateRestaurantOwnerBodyDto extends CreateRestaurantOwnerRequestBodyDto{
-    @IsNotEmpty()
-    @IsNumber()
-    restaurantId!:number
 }

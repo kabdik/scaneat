@@ -9,7 +9,7 @@ import { CategoryService } from '../category/category.service';
 import type { CategoryWithProduct } from '../category/interfaces/category.interface';
 import { RestaurantOwnerService } from '../restaurant-owner/restaurant-owner.service';
 import type { CreateRestaurantRequestBodyDto } from './dto/create-restaurant-request.body.dto';
-import type { CreateRestaurantBodyDto } from './dto/create-restaurant.body.dto';
+import type { CreateRestaurantWithOwnerDto } from './dto/create-restaurant.body.dto';
 import type { UpdateRestaurantBodyDto } from './dto/update-restaurant.body.dto';
 import { RestaurantEntity } from './entities/restaurant.entity';
 import { VerificationStatus } from './enum/verification-status.enum';
@@ -18,13 +18,13 @@ import type { Restaurant, RestaurantWithOwner } from './interfaces/restaurant.in
 @Injectable()
 export class RestaurantService {
   constructor(
-    private readonly categoryService:CategoryService,
+    private readonly categoryService: CategoryService,
     @InjectRepository(RestaurantEntity)
     private readonly restaurantRepository: Repository<RestaurantEntity>,
     private readonly restaurantOwnerService: RestaurantOwnerService,
   ) {}
 
-  public async getMenu(restaurantSlug:string): Promise<CategoryWithProduct[]> {
+  public async getMenu(restaurantSlug: string): Promise<CategoryWithProduct[]> {
     const restaurant = await this.restaurantRepository.findOne({ where: { slug: restaurantSlug } });
     if (!restaurant) {
       throw new NotFoundException('There is no restaurant with such slug');
@@ -36,22 +36,25 @@ export class RestaurantService {
     return this.categoryService.getCategoriesWithProducts(restaurantId);
   }
 
-  public async getRestaurantbySlug(restaurantSlug:string):Promise<Restaurant> {
-    const [restaurant] = <Restaurant[]> await this.restaurantRepository.manager.query(`
+  public async getRestaurantbySlug(restaurantSlug: string): Promise<Restaurant> {
+    const [restaurant] = <Restaurant[]> await this.restaurantRepository.manager.query(
+      `
       SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
       r."isActive", r."verificationStatus", r."photoId", p."originalUrl", p.thumbnails 
         FROM ${TableName.RESTAURANT} AS r 
         LEFT JOIN ${TableName.PHOTO} as p
         ON r."photoId" = p.id
         WHERE r.slug=$1 
-    `, [restaurantSlug]);
+    `,
+      [restaurantSlug],
+    );
     if (!restaurant) {
       throw new NotFoundException('There is no store with such slug');
     }
     return restaurant;
   }
 
-  public async generateQR(restaurantId:number):Promise<Buffer> {
+  public async generateQR(restaurantId: number): Promise<Buffer> {
     const restaurant = await this.restaurantRepository.findOneBy({ id: restaurantId });
     if (!restaurant) {
       throw new NotFoundException('Такого ресторана не существует');
@@ -60,7 +63,7 @@ export class RestaurantService {
     return qrcode.toBuffer(url);
   }
 
-  public async getAll(restaurantOwnerId:number, status?:VerificationStatus):Promise<Restaurant[]> {
+  public async getAll(restaurantOwnerId: number, status?: VerificationStatus): Promise<Restaurant[]> {
     const params: Array<string | number> = [restaurantOwnerId];
     let query = `
       SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
@@ -77,26 +80,31 @@ export class RestaurantService {
     return <Promise<Restaurant[]>> this.restaurantRepository.query(query, params);
   }
 
-  public async createRestaurantRequest({ restaurant: restaurantData, restaurantOwner }: CreateRestaurantRequestBodyDto):Promise<void> {
-    return this.restaurantRepository.manager.transaction(async (em:EntityManager) => {
-      const restaurant = await this.createRestaurant(restaurantData, em);
+  public async createRestaurantRequest({
+    restaurant: restaurantData,
+    restaurantOwner: restaurantOwnerData,
+  }: CreateRestaurantRequestBodyDto): Promise<void> {
+    return this.restaurantRepository.manager.transaction(async (em: EntityManager) => {
+      const restaurantOwner = await this.restaurantOwnerService.createRestaurantOwner(restaurantOwnerData, em);
 
-      await this.restaurantOwnerService.createRestaurantOwner({ ...restaurantOwner, restaurantId: restaurant.id }, em);
+      await this.createRestaurant({ ...restaurantData, restaurantOwnerId: restaurantOwner.id }, em);
     });
   }
 
-  public async createRestaurant(restaurantData:CreateRestaurantBodyDto, em?:EntityManager):Promise<Restaurant> {
+  public async createRestaurant(restaurantData: CreateRestaurantWithOwnerDto, em?: EntityManager): Promise<void> {
+    console.log(restaurantData);
+
     const entityManager = em || this.restaurantRepository.manager;
 
     if (await entityManager.findOne(RestaurantEntity, { where: { slug: restaurantData.slug } })) {
       throw new BadRequestException('this restaurant already exists');
     }
 
-    return entityManager.save(RestaurantEntity, restaurantData);
+    await entityManager.save(RestaurantEntity, restaurantData);
   }
 
-  public async getAllRestaurantRequests(verificationStatus?:VerificationStatus):Promise<RestaurantWithOwner[]> {
-    const params:Array<VerificationStatus> = [];
+  public async getAllRestaurantRequests(verificationStatus?: VerificationStatus): Promise<RestaurantWithOwner[]> {
+    const params: Array<VerificationStatus> = [];
     let query = `
       SELECT r.id, r.name, r.slug, r.phone, r."cityId", r.address, r.rating, r."hasTakeAway", r."hasDelivery",
       r."isActive", r."verificationStatus", p."originalUrl", p.thumbnails, 
@@ -116,9 +124,8 @@ export class RestaurantService {
     return <Promise<RestaurantWithOwner[]>> this.restaurantRepository.manager.query(query, params);
   }
 
-  public async verifyRestaurantRequest(restaurantId:number):Promise<void> {
-    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
-      relations: ['restaurantOwner'] });
+  public async verifyRestaurantRequest(restaurantId: number): Promise<void> {
+    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId }, relations: ['restaurantOwner'] });
     if (!restaurant) {
       throw new NotFoundException('There is no restaurant with this slug');
     }
@@ -130,9 +137,8 @@ export class RestaurantService {
     await this.restaurantRepository.save(restaurant);
   }
 
-  public async rejectRestaurantRequest(restaurantId:number):Promise<void> {
-    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId },
-      relations: ['restaurantOwner'] });
+  public async rejectRestaurantRequest(restaurantId: number): Promise<void> {
+    const restaurant = await this.restaurantRepository.findOne({ where: { id: restaurantId }, relations: ['restaurantOwner'] });
     if (!restaurant) {
       throw new NotFoundException('There is no restaurant with this slug');
     }
@@ -145,7 +151,7 @@ export class RestaurantService {
     await this.restaurantRepository.save(restaurant);
   }
 
-  public async updateRestaurant(restaurantId:number, data:UpdateRestaurantBodyDto):Promise<void> {
+  public async updateRestaurant(restaurantId: number, data: UpdateRestaurantBodyDto): Promise<void> {
     const { affected } = await this.restaurantRepository.update(restaurantId, data);
     if (affected === 0) {
       throw new NotFoundException('Ресторана с таким id не существует');
