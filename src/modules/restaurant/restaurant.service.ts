@@ -103,7 +103,7 @@ export class RestaurantService {
       u.name AS "OwnerName" , u.surname AS "OwnerSurname", u.phone AS "OwnerPhone" 
         FROM ${TableName.RESTAURANT} AS r
         INNER JOIN ${TableName.RESTAURANT_OWNER} AS ro
-        ON r.id=ro."restaurantId"
+        ON r."restaurantOwnerId"=ro.id
         INNER JOIN public.${TableName.USER} as u
         on ro."userId"=u.id
         LEFT JOIN ${TableName.PHOTO} as p
