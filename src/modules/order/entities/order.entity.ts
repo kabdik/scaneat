@@ -27,14 +27,20 @@ export class OrderEntity extends BaseEntity implements Order {
   @Column('enum', { enum: OrderType })
   type!: OrderType;
 
-  @Column('text', {nullable:true})
-  description!: string | null
+  @Column('text', { nullable: true })
+  description!: string | null;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   user?: UserEntity;
 
-  @ManyToOne(() => RestaurantEntity)
+  @ManyToOne(() => RestaurantEntity, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'restaurantId' })
   restaurant?: RestaurantEntity;
 }
