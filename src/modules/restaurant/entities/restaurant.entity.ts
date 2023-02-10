@@ -16,7 +16,7 @@ export class RestaurantEntity extends BaseEntity implements Restaurant {
   @Column('varchar', { unique: true })
   slug!: string;
 
-  @Column('text', { unique: true, nullable: true })
+  @Column('text', { nullable: true })
   phone!: string | null;
 
   @Column('int')
