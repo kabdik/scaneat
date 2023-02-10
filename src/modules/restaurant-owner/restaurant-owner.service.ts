@@ -17,9 +17,12 @@ export class RestaurantOwnerService {
     private readonly userService: UserService,
   ) {}
 
-  public async createRestaurantOwner(data : CreateRestaurantOwnerRequestBodyDto, em?: EntityManager): Promise<RestaurantOwner> {
+  public async createRestaurantOwner(data: CreateRestaurantOwnerRequestBodyDto, em?: EntityManager): Promise<RestaurantOwner> {
     const entityManager = em || this.restaurantOwnerRepository.manager;
-    let user = await entityManager.findOneBy(UserEntity, [{ email: data.email }, { phone: data.phone }]);
+    let user = await entityManager.findOneBy(UserEntity, [
+      { email: data.email, role: UserRoleType.RESTAURANT_OWNER },
+      { phone: data.phone, role: UserRoleType.RESTAURANT_OWNER },
+    ]);
 
     if (user) {
       if (user.email === data.email) {

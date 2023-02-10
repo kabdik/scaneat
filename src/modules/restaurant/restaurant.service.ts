@@ -85,13 +85,15 @@ export class RestaurantService {
     restaurantOwner: restaurantOwnerData,
   }: CreateRestaurantRequestBodyDto): Promise<void> {
     return this.restaurantRepository.manager.transaction(async (em: EntityManager) => {
-      const restaurantOwner = await this.restaurantOwnerService.createRestaurantOwner(restaurantOwnerData, em);
+      const restaurant = await this.createRestaurant(restaurantData, em);
 
-      await this.createRestaurant({ ...restaurantData, restaurantOwnerId: restaurantOwner.id }, em);
+      const restaurantOwner = await this.restaurantOwnerService.createRestaurantOwner(restaurantOwnerData, em);
+      restaurant.restaurantOwnerId = restaurantOwner.id;
+      await em.save(RestaurantEntity, restaurant);
     });
   }
 
-  public async createRestaurant(restaurantData: CreateRestaurantWithOwnerDto, em?: EntityManager): Promise<void> {
+  public async createRestaurant(restaurantData: CreateRestaurantWithOwnerDto, em?: EntityManager): Promise<Restaurant> {
     console.log(restaurantData);
 
     const entityManager = em || this.restaurantRepository.manager;
@@ -100,7 +102,7 @@ export class RestaurantService {
       throw new BadRequestException('this restaurant already exists');
     }
 
-    await entityManager.save(RestaurantEntity, restaurantData);
+    return entityManager.save(RestaurantEntity, restaurantData);
   }
 
   public async getAllRestaurantRequests(verificationStatus?: VerificationStatus): Promise<RestaurantWithOwner[]> {

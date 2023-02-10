@@ -28,26 +28,26 @@ export class UserService {
       throw new BadRequestException('There already exists user with such email');
     }
 
-    const user = <User>entityManager.create(UserEntity, data);
-    if (user.password) {
-      user.password = await this.hashPassword(user.password);
-    } else {
-      const randomPassword = Math.random().toString(36).slice(-8);
-      user.password = await this.hashPassword(randomPassword);
+    let user = <User>entityManager.create(UserEntity, data);
 
-      await this.sendgrid.sendPassword(randomPassword, data.email);
-    }
-    return entityManager.save(UserEntity, user);
+    const randomPassword = Math.random().toString(36).slice(-8);
+    user.password = await this.hashPassword(randomPassword);
+
+    user = await entityManager.save(UserEntity, user);
+
+    await this.sendgrid.sendPassword(randomPassword, data.email);
+    return user;
   }
 
-  public async createClient(data: CreateClientBodyDto, em?:EntityManager): Promise<User> {
+  public async createClient(data: CreateClientBodyDto, em?: EntityManager): Promise<User> {
     const entityManager = em || this.userRepository.manager;
 
-    const client = await entityManager.findOne(UserEntity, { where:
-    {
-      phone: data.phone,
-      role: UserRoleType.USER,
-    } });
+    const client = await entityManager.findOne(UserEntity, {
+      where: {
+        phone: data.phone,
+        role: UserRoleType.USER,
+      },
+    });
 
     if (client) {
       return client;

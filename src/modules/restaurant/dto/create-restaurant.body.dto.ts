@@ -36,7 +36,7 @@ export class CreateRestaurantBodyDto{
 
 
 export class CreateRestaurantWithOwnerDto extends CreateRestaurantBodyDto{
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
-    restaurantOwnerId!:number
+    restaurantOwnerId?:number 
 }
