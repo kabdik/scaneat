@@ -48,7 +48,7 @@ export class ProductService {
   public async getCategoryProducts(restaurantId:number, categoryId?:number, name?:string):Promise<Product[]> {
     const params: Array<number | string> = [restaurantId];
     let query = `    
-      SELECT pr.id, pr.name, pr.description, pr.price, pr."restaurantId", pr."categoryId", pr."isDeleted",
+      SELECT pr.id, pr.name, pr.description, pr.price, pr."unitPrice",pr."restaurantId", pr."categoryId", pr."isDeleted",
       pr."photoId", p."originalUrl", p.thumbnails
         FROM ${TableName.PRODUCT} AS pr LEFT JOIN ${TableName.PHOTO} AS p 
         ON pr."photoId" = p.id 
