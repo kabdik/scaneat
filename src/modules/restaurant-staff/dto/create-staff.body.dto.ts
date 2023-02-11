@@ -1,5 +1,5 @@
+import type { UserRoleType } from '@/modules/user/enums/user-role.enum';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import type { RestaurnatStaffRole } from '../enums/restaurant-staff-role.enum';
 export class CreateStaffBodyDto {
   @IsString()
   @IsNotEmpty()
@@ -19,5 +19,5 @@ export class CreateStaffBodyDto {
 
   @IsString()
   @IsNotEmpty()
-  role!: RestaurnatStaffRole;
+  role!: UserRoleType;
 }
