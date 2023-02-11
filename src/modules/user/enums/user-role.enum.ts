@@ -4,4 +4,6 @@ export enum UserRoleType {
   RESTAURANT_OWNER = 'restaurantOwner',
   USER = 'user',
   RESTAURANT_STAFF = 'restaurantStaff',
+  MANAGER = 'manager',
+  CHEF = 'chef',
 }
