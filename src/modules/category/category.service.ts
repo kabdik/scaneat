@@ -34,11 +34,14 @@ export class CategoryService {
   public async getCategories(restaurantId:number):Promise<Category[]> {
     return <Category[]> await this.categoryRepository.query(
       `
-      SELECT c.*, COUNT(pr.id) AS "numberOfProducts"
-        FROM ${TableName.CATEGORY} AS c LEFT JOIN ${TableName.PRODUCT} AS pr 
-        ON c.id = pr."categoryId"
+      SELECT c.*, COUNT(deleted_false_p.id) AS "numberOfProducts"
+        FROM ${TableName.CATEGORY} AS c LEFT JOIN (
+                                            SELECT pr.id,pr."categoryId"
+                                            from ${TableName.PRODUCT} as pr
+                                            where pr."isDeleted" = false
+                                            ) as deleted_false_p 
+        ON c.id = deleted_false_p."categoryId"
         WHERE c."restaurantId"=$1 AND c."isDeleted" = false
-        AND pr."isDeleted"= false
         GROUP BY c.id
         `,
       [restaurantId],
