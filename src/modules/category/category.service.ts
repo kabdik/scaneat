@@ -38,6 +38,7 @@ export class CategoryService {
         FROM ${TableName.CATEGORY} AS c LEFT JOIN ${TableName.PRODUCT} AS pr 
         ON c.id = pr."categoryId"
         WHERE c."restaurantId"=$1 AND c."isDeleted" = false
+        AND pr."isDeleted"= false
         GROUP BY c.id
         `,
       [restaurantId],
