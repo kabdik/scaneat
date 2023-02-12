@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 
 import { ChangeStatusBodyDTO } from '../dto/change-status.body.dto';
+import type { OrderStatus } from '../enum/order-status.enum';
 import type { Order } from '../interfaces/order.interface';
 import { OrderService } from '../services/order.service';
 
@@ -9,7 +10,7 @@ export class ManagerOrderController {
   constructor(private readonly orderService:OrderService) {}
 
   @Get('')
-  public async getOrders(@Param('restaurantId') restaurantId:number, @Query('status') status?:string):Promise<Order[]> {
+  public async getOrders(@Param('restaurantId') restaurantId:number, @Query('status') status?:OrderStatus):Promise<Order[]> {
     return this.orderService.getManagerOrders(restaurantId, status);
   }
 

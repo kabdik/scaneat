@@ -1,6 +1,5 @@
 import { BadGatewayException, BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { EntityManager, Repository } from 'typeorm';
 
 import { TableName } from '@/common/enums/table';
@@ -10,7 +9,7 @@ import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entit
 import { UserService } from '../../user/user.service';
 import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.body.dto';
 import { OrderEntity } from '../entities/order.entity';
-import { OrderStatus } from '../enum/order-status.enum';
+import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
 import type { Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
@@ -89,7 +88,7 @@ export class OrderService {
     return recalculatedTotal - totalUnitPrice;
   }
 
-  public async getManagerOrders(restaurantId: number, status?: string): Promise<Order[]> {
+  public async getManagerOrders(restaurantId: number, status?: OrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description,
@@ -132,5 +131,31 @@ export class OrderService {
 
     order.status = status;
     await this.orderRepository.save(order);
+  }
+
+  public async getChefOrders(restaurantId:number, status?:ChefOrderStatus): Promise<Order[]> {
+    const params: Array<string | number> = [restaurantId];
+    const enumValues = Object.values(ChefOrderStatus).map((value:string) => `'${value}'`).join(', ');
+
+    let query = `
+    SELECT o.id, o.profit, o.total, o.status, o.type, o.description,
+      json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
+      oa.address, oa.details AS "addressDetails"
+      FROM public.${TableName.ORDER} AS o
+      INNER JOIN ${TableName.ORDER_PRODUCT} AS op
+      ON o.id = op."orderId"
+      INNER JOIN ${TableName.PRODUCT} as p
+      ON op."productId" = p.id
+      LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
+      ON o.id = oa."orderId"
+    `;
+    let whereClause = `WHERE o."restaurantId"=$1 
+                      AND o.status IN (${enumValues} ) `;
+    if (status) {
+      whereClause += 'AND o.status = $2 ';
+      params.push(status);
+    }
+    query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details`;
+    return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 }

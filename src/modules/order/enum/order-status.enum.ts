@@ -7,3 +7,9 @@ export enum OrderStatus {
   ON_DELIVERY = 'on_delivery',
   COMPLETED = 'completed',
 }
+
+export enum ChefOrderStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  READY = 'ready',
+}
