@@ -23,4 +23,9 @@ export class ManagerOrderController {
   public async changeStatus(@Body() { status }:ChangeStatusBodyDTO, @Param('orderId') orderId:number):Promise<void> {
     return this.orderService.changeStatus(status, orderId);
   }
+
+  @Patch(':orderId/reject')
+  public async rejectOrder(@Param('orderId') orderId:number):Promise<void> {
+    return this.orderService.rejectOrder(orderId);
+  }
 }
