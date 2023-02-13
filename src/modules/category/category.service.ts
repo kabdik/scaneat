@@ -14,9 +14,24 @@ export class CategoryService {
   constructor(@InjectRepository(CategoryEntity) private readonly categoryRepository: Repository<CategoryEntity>) {}
 
   public async getCategoriesWithProducts(restaurantId:number):Promise<CategoryWithProduct[]> {
-    return <CategoryWithProduct[]> await this.categoryRepository.find({
-      relations: ['products'],
-      where: { restaurantId, isDeleted: false, products: { isDeleted: false } } });
+    return <CategoryWithProduct[]> await this.categoryRepository.query(`
+      SELECT c.id, c.name, c.description, c."isActive", c."isDeleted",
+        json_agg(json_build_object(
+                        'id',p.id, 'name',p.name, 'description', p.description,
+                        'price', p.price, 'unitPrice',p."unitPrice",'isDeleted',p."isDeleted",
+                        'photoId',ph.id, 'photoUrl', ph."originalUrl", 'thumbnails', ph."thumbnails"
+                )) as products
+        FROM ${TableName.CATEGORY} as c
+        LEFT JOIN ${TableName.PRODUCT} as p 
+        ON c.id = p."categoryId"
+        LEFT JOIN ${TableName.PHOTO} as ph
+        ON p."photoId" = ph.id
+        WHERE c."restaurantId"=$1 
+        AND c."isActive" = true
+        AND c."isDeleted" = false
+        AND p."isDeleted" = false
+        GROUP BY c.id
+      `, [restaurantId]);
   }
 
   public async addCategory(data: AddCategoryWithRestaurantDto):Promise<Category> {
