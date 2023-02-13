@@ -1,4 +1,4 @@
-import { BadGatewayException, BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
@@ -17,6 +17,7 @@ import { OrderProductService } from './order-product.service';
 
 @Injectable()
 export class OrderService {
+  private chefStatus:Array<string> = ['pending', 'processing', 'ready'];
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
@@ -45,7 +46,6 @@ export class OrderService {
         type: data.type,
         description: data.description,
       });
-      console.log(`orderId is ${order.id}`);
 
       await this.orderProductService.createOrderProduct(order.id, data.products, em);
 
@@ -104,6 +104,9 @@ export class OrderService {
     `;
     let whereClause = 'WHERE o."restaurantId"=$1 ';
     if (status) {
+      if (!Object.values(OrderStatus).includes(status)) {
+        throw new BadRequestException('Такого статуса не существует');
+      }
       whereClause += 'AND o.status = $2 ';
       params.push(status);
     }
@@ -117,9 +120,21 @@ export class OrderService {
       throw new NotFoundException('Такого заказа не существует');
     }
     if (order.status !== OrderStatus.IDLE) {
-      throw new BadGatewayException('Заказ уже принят');
+      throw new BadRequestException('Заказ уже принят или отменен');
     }
     order.status = OrderStatus.PENDING;
+    await this.orderRepository.save(order);
+  }
+
+  public async rejectOrder(orderId:number): Promise<void> {
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new NotFoundException('Такого заказа не существует');
+    }
+    if (order.status !== OrderStatus.IDLE) {
+      throw new BadRequestException('Заказ уже принят или отменен');
+    }
+    order.status = OrderStatus.CANCELED;
     await this.orderRepository.save(order);
   }
 
@@ -152,10 +167,26 @@ export class OrderService {
     let whereClause = `WHERE o."restaurantId"=$1 
                       AND o.status IN (${enumValues} ) `;
     if (status) {
+      if (!this.chefStatus.includes(status)) {
+        throw new BadRequestException('Такого статуса не существует');
+      }
       whereClause += 'AND o.status = $2 ';
       params.push(status);
     }
     query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details`;
     return <Order[]> await this.orderRepository.manager.query(query, params);
+  }
+
+  public async chefChangeStatus(status:OrderStatus, orderId:number): Promise<void> {
+    if (!this.chefStatus.includes(status)) {
+      throw new BadRequestException('Передан недопустимый статус');
+    }
+    const order = await this.orderRepository.findOneBy({ id: orderId });
+    if (!order) {
+      throw new NotFoundException('Такого заказа не существует');
+    }
+
+    order.status = status;
+    await this.orderRepository.save(order);
   }
 }
