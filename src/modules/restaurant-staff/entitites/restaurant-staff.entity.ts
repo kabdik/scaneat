@@ -9,7 +9,10 @@ export class RestaurantStaffEntity extends BaseEntity implements RestaurantStaff
   @Column('int')
   userId!: number;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity,{
+    onDelete:'CASCADE',
+    onUpdate:'CASCADE'
+  })
   @JoinColumn({ name: 'userId' })
   user?: UserEntity;
 }

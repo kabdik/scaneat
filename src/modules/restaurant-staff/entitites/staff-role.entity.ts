@@ -1,15 +1,15 @@
 import { BaseEntity } from '@/common/entities/base.entity';
 import { TableName } from '@/common/enums/table';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
-import { UserEntity } from '@/modules/user/entities/user.entity';
 import { UserRoleType } from '@/modules/user/enums/user-role.enum';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import type { StaffRole } from '../interfaces/staff-role.interface';
+import { RestaurantStaffEntity } from './restaurant-staff.entity';
 
 @Entity(TableName.STAFF_ROLE)
 export class StaffRoleEntity extends BaseEntity implements StaffRole {
   @Column('int')
-  userId!: number;
+  restaurantStaffId!: number;
 
   @Column('enum', { enum: UserRoleType, nullable: true })
   role!: UserRoleType | null;
@@ -17,12 +17,12 @@ export class StaffRoleEntity extends BaseEntity implements StaffRole {
   @Column('int')
   restaurantId!: number;
 
-  @ManyToOne(() => UserEntity, {
+  @ManyToOne(() => RestaurantStaffEntity, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'userId' })
-  user?: UserEntity;
+  @JoinColumn({ name: 'restaurantStaffId' })
+  restaurantStaff?: RestaurantStaffEntity;
 
   @ManyToOne(() => RestaurantEntity, {
     onDelete: 'CASCADE',
