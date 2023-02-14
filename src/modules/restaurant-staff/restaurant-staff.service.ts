@@ -23,8 +23,8 @@ export class RestaurantStaffService {
       }
       const user = await this.userService.createUser(data, em);
 
-      await em.save(RestaurantStaffEntity, { userId: user.id });
-      await em.save(StaffRoleEntity, { userId: user.id, restaurantId, role: data.role });
+      const { id: restaurantStaffId } = await em.save(RestaurantStaffEntity, { userId: user.id });
+      await em.save(StaffRoleEntity, { restaurantStaffId, restaurantId, role: data.role });
     });
   }
 }
