@@ -21,9 +21,9 @@ export class OrderProductService {
     const entityManager = em || this.orderProductRepository.manager;
 
     const data = await Promise.all(orderProducts.map(async (orderProduct:OrderProductDto) => {
-      const product = await entityManager.findOneBy(ProductEntity, { id: orderProduct.productId });
+      const product = await entityManager.findOneBy(ProductEntity, { id: orderProduct.productId, isDeleted: false });
       if (!product) {
-        throw new BadRequestException('Такого продукта не существует');
+        throw new BadRequestException(`продукта c ${orderProduct.productId} не существует`);
       }
 
       return {
