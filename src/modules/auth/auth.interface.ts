@@ -5,12 +5,22 @@ export interface UserPayload {
   role: UserRoleType | null;
   restaurantOwnerId?: number;
   restaurantStaffId?: number;
+  chefId?: number;
+  managerId?: number;
 }
 
 export interface OwnerPayload {
   userId: number;
   role: UserRoleType | null;
   restaurantOwnerId: number;
+}
+
+export interface RestaurantStaffPayload {
+  userId: number;
+  role: UserRoleType | null;
+  restaurantStaffId: number;
+  chefId?: number;
+  managerId?: number;
 }
 
 export interface JwtSign {
@@ -23,6 +33,8 @@ export interface JwtPayload {
   role: UserRoleType | null;
   restaurantOwnerId?: number;
   restaurantStaffId?: number;
+  chefId?: number;
+  managerId?: number;
 }
 
 export interface UserLogin {

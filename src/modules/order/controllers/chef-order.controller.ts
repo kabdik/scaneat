@@ -1,11 +1,15 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
+import { RestaurantStaff } from '@/common/decorators/restaurant-staff.decorator';
+import { UserRoleType } from '@/modules/user/enums/user-role.enum';
+
 import { ChangeStatusBodyDTO } from '../dto/change-status.body.dto';
 import type { ChefOrderStatus } from '../enum/order-status.enum';
 import type { Order } from '../interfaces/order.interface';
 import { OrderService } from '../services/order.service';
 
+@RestaurantStaff(UserRoleType.CHEF)
 @Controller('chef/restaurant/:restaurantId/order')
 export class ChefOrderController {
   constructor(private readonly orderService: OrderService) {}

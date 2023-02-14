@@ -19,5 +19,6 @@ export class SendgridService {
     };
     await SendGrid.send(mail);
     console.log(`E-Mail sent to ${mail.to}`);
+    console.log(`${password}`);
   }
 }

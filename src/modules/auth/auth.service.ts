@@ -10,6 +10,10 @@ import { ServerConfig } from '@/config/server.config';
 
 import { RestaurantOwnerEntity } from '../restaurant-owner/entities/restaurant-owner.entity';
 import type { RestaurantOwner } from '../restaurant-owner/interfaces/restaurant-owner.intereface';
+import { RestaurantStaffEntity } from '../restaurant-staff/entitites/restaurant-staff.entity';
+import { StaffRoleEntity } from '../restaurant-staff/entitites/staff-role.entity';
+import type { RestaurantStaff } from '../restaurant-staff/interfaces/restaurant-staff.interface';
+import type { StaffRole } from '../restaurant-staff/interfaces/staff-role.interface';
 import { UserRoleType } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
 import type { JwtPayload, JwtSign, UserLogin, UserPayload } from './auth.interface';
@@ -34,10 +38,19 @@ export class AuthService {
       userId: user.id,
       role: user.role,
     };
-
+    let staffRole:StaffRole;
     if (user.role === UserRoleType.RESTAURANT_OWNER) {
       const { id: restaurantOwnerId } = <RestaurantOwner> await this.em.findOneBy(RestaurantOwnerEntity, { userId: user.id });
       userPayload.restaurantOwnerId = restaurantOwnerId;
+    } else {
+      const restaurantStaff = <RestaurantStaff> await this.em.findOneBy(RestaurantStaffEntity, { userId: user.id });
+      userPayload.restaurantStaffId = restaurantStaff.id;
+      staffRole = <StaffRole> await this.em.findOneBy(StaffRoleEntity, { restaurantStaffId: restaurantStaff.id });
+      if (user.role === UserRoleType.MANAGER) {
+        userPayload.managerId = staffRole.id;
+      } else if (user.role === UserRoleType.CHEF) {
+        userPayload.chefId = staffRole.id;
+      }
     }
 
     this.setAuthCookie(res, userPayload);
