@@ -39,7 +39,8 @@ export class TelegramUpdate {
     ).join('')}` + '\n'
     + `\u{1F3E0}Адрес: ${order.address} ${order.addressDetails}\n`
     + `\u{1F4B5}Итого: ${order.total}\n`
-    + `\u{1F51C}Статус: ${order.status}`,
+    + `\u{1F51C}Статус: ${order.status}\n`
+    + `\u{1F551}Время заказа: ${order.createdAt}`,
     );
   }
 }
