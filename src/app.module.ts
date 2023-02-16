@@ -14,6 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SentryModule, SentryInterceptor } from '@ntegral/nestjs-sentry';
 import * as redisStore from 'cache-manager-redis-store';
 import type { ValidationError } from 'class-validator';
+import { TelegrafModule } from 'nestjs-telegraf';
 import type { RedisClientOptions } from 'redis';
 
 import { CommonModule } from './common/common.module';
@@ -22,6 +23,7 @@ import { DbConfig } from './config/db.config';
 import { RedisConfig } from './config/redis.config';
 import { SentryConfig } from './config/sentry.config';
 import { ServerConfig } from './config/server.config';
+import { TelegramConfig } from './config/telegram.config';
 import { AdminJSModule } from './modules/adminjs/adminjs.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
@@ -32,6 +34,8 @@ import { ProductModule } from './modules/product/product.module';
 import { RestaurantOwnerModule } from './modules/restaurant-owner/restaurant-owner.module';
 import { RestaurantStaffModule } from './modules/restaurant-staff/restaurant-staff.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
+import { sessionMiddleware } from './modules/telegram/middlewares/session.middleware';
+import { TelegramModule } from './modules/telegram/telegram.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -63,6 +67,12 @@ import { UserModule } from './modules/user/user.module';
     BullModule.forRoot({
       url: RedisConfig.REDIS_URL,
     }),
+    TelegrafModule.forRoot({
+      token: TelegramConfig.TELEGRAM_BOT_TOKEN,
+      botName: TelegramConfig.TELEGRAM_BOT_NAME,
+      middlewares: [sessionMiddleware],
+      include: [TelegramModule],
+    }),
     // Service Modules
     CommonModule, // Global
     RestaurantModule,
@@ -78,6 +88,7 @@ import { UserModule } from './modules/user/user.module';
     AuthModule,
     PhotoModule,
     OrderModule,
+    TelegramModule,
   ],
   providers: [
     // Global Guard, Authentication check on all routers
