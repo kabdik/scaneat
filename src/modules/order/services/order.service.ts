@@ -91,12 +91,15 @@ export class OrderService {
   public async getManagerOrders(restaurantId: number, status?: OrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
     let query = `
-    SELECT o.id, o.profit, o.total, o.status, o.type, o.description,
+    SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
       json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
+      json_build_object('name',u.name, 'phone', u.phone ) as user,
       oa.address, oa.details AS "addressDetails" 
       FROM public.${TableName.ORDER} AS o
       INNER JOIN ${TableName.ORDER_PRODUCT} AS op  
       ON o.id = op."orderId"
+      INNER JOIN public.${TableName.USER} as u
+      ON u.id = o."userId"
       INNER JOIN ${TableName.PRODUCT} as p
       ON op."productId" = p.id 
       LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
@@ -110,7 +113,7 @@ export class OrderService {
       whereClause += 'AND o.status = $2 ';
       params.push(status);
     }
-    query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details`;
+    query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details,u.id`;
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
@@ -153,12 +156,15 @@ export class OrderService {
     const enumValues = Object.values(ChefOrderStatus).map((value:string) => `'${value}'`).join(', ');
 
     let query = `
-    SELECT o.id, o.profit, o.total, o.status, o.type, o.description,
+    SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
       json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
+      json_build_object('name',u.name, 'phone', u.phone ) as user,
       oa.address, oa.details AS "addressDetails"
       FROM public.${TableName.ORDER} AS o
       INNER JOIN ${TableName.ORDER_PRODUCT} AS op
       ON o.id = op."orderId"
+      INNER JOIN public.${TableName.USER} as u
+      ON u.id = o."userId"
       INNER JOIN ${TableName.PRODUCT} as p
       ON op."productId" = p.id
       LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
@@ -173,7 +179,7 @@ export class OrderService {
       whereClause += 'AND o.status = $2 ';
       params.push(status);
     }
-    query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details`;
+    query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details, u.id`;
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
