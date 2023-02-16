@@ -4,6 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
 import { v4 as uuid } from 'uuid';
 
+import { TelegramConfig } from '@/config/telegram.config';
+
 import type { ParsedPhoneNumber } from '../interfaces/phone';
 
 @Injectable()
@@ -31,6 +33,11 @@ export class UtilService {
     }
 
     return Math.round(number * 100) / 100;
+  }
+
+  public generateTgLink(orderId:number):string {
+    const queryParam = Buffer.from(`orderId=${orderId}`, 'binary').toString('base64');
+    return `https://t.me/${TelegramConfig.TELEGRAM_BOT_NAME}?start=${queryParam}`;
   }
 
   public generateRandomFileKey(file: Express.Multer.File, prefixDir: string): string {

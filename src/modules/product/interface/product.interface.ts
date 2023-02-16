@@ -10,3 +10,10 @@ export interface Product extends BaseEntity {
   photoId: number | null;
   isDeleted: boolean;
 }
+
+export interface OrderProduct {
+  name: string;
+  price: number;
+  unitPrice: number;
+  quantity: number;
+}

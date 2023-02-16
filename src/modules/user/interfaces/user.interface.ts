@@ -10,3 +10,8 @@ export interface User extends BaseEntity {
   password:string | null;
   role:UserRoleType | null;
 }
+
+export interface OrderUser {
+  name:string;
+  phone:string;
+}

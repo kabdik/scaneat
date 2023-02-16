@@ -37,7 +37,7 @@
     "no-void": ["error", { "allowAsStatement": true }],
     "object-curly-newline": "off",
     "spaced-comment": ["error", "always", { "line": { "markers": ["/", "#region", "#endregion"] } }],
-
+    "no-useless-concat":"off",
     // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/keyword-spacing.md
     "keyword-spacing": "off",
     "@typescript-eslint/keyword-spacing": ["error"],

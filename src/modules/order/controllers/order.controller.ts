@@ -13,7 +13,7 @@ export class OrderController {
   public async createOrder(
     @Body() data:CreateOrderBodyDto,
       @Param('restaurantId') restaurantId:number,
-  ):Promise<void> {
+  ):Promise<string> {
     return this.orderService.createOrder(data, restaurantId);
   }
 }

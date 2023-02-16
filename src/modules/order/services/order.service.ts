@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
 import { TableName } from '@/common/enums/table';
+import { UtilService } from '@/common/providers/util.service';
 import { ProductEntity } from '@/modules/product/entitites/product.entity';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
 
@@ -11,7 +12,7 @@ import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.bo
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
-import type { Order } from '../interfaces/order.interface';
+import type { GetOrder, Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
 import { OrderProductService } from './order-product.service';
 
@@ -24,9 +25,10 @@ export class OrderService {
     private readonly userService: UserService,
     private readonly orderProductService: OrderProductService,
     private readonly orderAddressService: OrderAddressService,
+    private readonly utilService: UtilService,
   ) {}
 
-  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<void> {
+  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<string> {
     return this.orderRepository.manager.transaction(async (em: EntityManager) => {
       const recalculatedTotal = await this.recalculateTotal(data.products, em);
 
@@ -56,6 +58,7 @@ export class OrderService {
         });
         await this.orderAddressService.createOrderAddress(order.id, { address: data.address, details: data.details, cityId }, em);
       }
+      return this.utilService.generateTgLink(order.id);
     });
   }
 
@@ -194,5 +197,29 @@ export class OrderService {
 
     order.status = status;
     await this.orderRepository.save(order);
+  }
+
+  public async getOrder(orderId:number): Promise<GetOrder> {
+    const [order] = <GetOrder[]> await this.orderRepository.manager.query(
+      `
+      SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
+        json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
+        json_build_object('name',u.name, 'phone', u.phone ) as user,
+        oa.address, oa.details AS "addressDetails"
+        FROM public.${TableName.ORDER} AS o
+        INNER JOIN ${TableName.ORDER_PRODUCT} AS op
+        ON o.id = op."orderId"
+        INNER JOIN public.${TableName.USER} as u
+        ON u.id = o."userId"
+        INNER JOIN ${TableName.PRODUCT} as p
+        ON op."productId" = p.id
+        LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
+        ON o.id = oa."orderId"
+        where o.id=$1
+        GROUP BY o.id,u.id,oa.id
+        `,
+      [orderId],
+    );
+    return order;
   }
 }
