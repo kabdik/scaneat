@@ -11,4 +11,6 @@ export enum TableName {
   ORDER_ADDRESS = 'order_address',
   ORDER_PRODUCT = 'order_product',
   STAFF_ROLE = 'staff_role',
+  TG_CHAT = 'tg_chat',
+  ORDER_TRACK = 'order_track',
 }
