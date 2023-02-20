@@ -4,3 +4,7 @@ export interface OrderTrack extends BaseEntity {
   tgChatId:number;
   orderId:number;
 }
+
+export interface TgLink {
+  tgLink:string;
+}

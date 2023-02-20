@@ -12,6 +12,7 @@ import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.bo
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
+import type { TgLink } from '../interfaces/order-track.interface';
 import type { GetOrder, Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
 import { OrderProductService } from './order-product.service';
@@ -28,7 +29,7 @@ export class OrderService {
     private readonly utilService: UtilService,
   ) {}
 
-  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<string> {
+  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<TgLink> {
     return this.orderRepository.manager.transaction(async (em: EntityManager) => {
       const recalculatedTotal = await this.recalculateTotal(data.products, em);
 
@@ -58,7 +59,7 @@ export class OrderService {
         });
         await this.orderAddressService.createOrderAddress(order.id, { address: data.address, details: data.details, cityId }, em);
       }
-      return this.utilService.generateTgLink(order.id);
+      return { tgLink: this.utilService.generateTgLink(order.id) };
     });
   }
 

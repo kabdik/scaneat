@@ -2,6 +2,7 @@ import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
 import { CreateOrderBodyDto } from '../dto/create-order.body.dto';
+import type { TgLink } from '../interfaces/order-track.interface';
 import { OrderService } from '../services/order.service';
 
 @Controller('restaurant/:restaurantId/order')
@@ -13,7 +14,7 @@ export class OrderController {
   public async createOrder(
     @Body() data:CreateOrderBodyDto,
       @Param('restaurantId') restaurantId:number,
-  ):Promise<string> {
+  ):Promise<TgLink> {
     return this.orderService.createOrder(data, restaurantId);
   }
 }
