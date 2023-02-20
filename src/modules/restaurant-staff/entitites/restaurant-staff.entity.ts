@@ -2,7 +2,7 @@ import { BaseEntity } from '@/common/entities/base.entity';
 import { TableName } from '@/common/enums/table';
 import { PhotoEntity } from '@/modules/photo/entities/photo.entity';
 import { UserEntity } from '@/modules/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import type { RestaurantStaff } from '../interfaces/restaurant-staff.interface';
 
 @Entity(TableName.RESTAURANT_STAFF)
@@ -13,7 +13,7 @@ export class RestaurantStaffEntity extends BaseEntity implements RestaurantStaff
   @Column('int', { nullable: true })
   photoId!: number | null;
 
-  @OneToOne(() => PhotoEntity, {
+  @ManyToOne(() => PhotoEntity, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
