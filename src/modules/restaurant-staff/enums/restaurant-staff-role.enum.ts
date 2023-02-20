@@ -1,4 +1,4 @@
-export enum RestaurnatStaffRole {
+export enum RestaurantStaffRole {
   MANAGER = 'manager',
   CHEF = 'chef',
 }

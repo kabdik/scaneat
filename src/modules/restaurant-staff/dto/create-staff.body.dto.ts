@@ -1,6 +1,10 @@
 import type { UserRoleType } from '@/modules/user/enums/user-role.enum';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class CreateStaffBodyDto {
+  @IsNumber()
+  @IsOptional()
+  photoId?: number;
+  
   @IsString()
   @IsNotEmpty()
   name!: string;
