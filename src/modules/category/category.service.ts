@@ -17,7 +17,7 @@ export class CategoryService {
     return <CategoryWithProduct[]> await this.categoryRepository.query(`
       SELECT c.id, c.name, c.description, c."isActive", c."isDeleted",
         json_agg(json_build_object(
-                        'id',p.id, 'name',p.name, 'description', p.description,
+                        'id',p.id, 'name',p.name, 'description', p.description, 'restaurantId', p."restaurantId",
                         'price', p.price, 'unitPrice',p."unitPrice",'isDeleted',p."isDeleted",
                         'photoId',ph.id, 'photoUrl', ph."originalUrl", 'thumbnails', ph."thumbnails"
                 )) as products
