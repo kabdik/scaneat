@@ -10,6 +10,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_PIPE, RouterModule } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SentryModule, SentryInterceptor } from '@ntegral/nestjs-sentry';
 import * as redisStore from 'cache-manager-redis-store';
@@ -40,6 +41,7 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     AdminJSModule,
     SentryModule.forRoot({
       dsn: SentryConfig.SENTRY_DSN,

@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { EntityManager, Repository } from 'typeorm';
 
 import { TableName } from '@/common/enums/table';
@@ -9,9 +11,11 @@ import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entit
 
 import { UserService } from '../../user/user.service';
 import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.body.dto';
+import { OrderTrackEntity } from '../entities/order-track.entity';
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
+import { OrderEvent } from '../events/order.event';
 import type { TgLink } from '../interfaces/order-track.interface';
 import type { GetOrder, Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
@@ -19,14 +23,17 @@ import { OrderProductService } from './order-product.service';
 
 @Injectable()
 export class OrderService {
-  private chefStatus:Array<string> = ['pending', 'processing', 'ready'];
+  private chefStatus: Array<string> = ['pending', 'processing', 'ready'];
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
+    @InjectRepository(OrderTrackEntity)
+    private readonly orderTrackEntity: Repository<OrderTrackEntity>,
     private readonly userService: UserService,
     private readonly orderProductService: OrderProductService,
     private readonly orderAddressService: OrderAddressService,
     private readonly utilService: UtilService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<TgLink> {
@@ -121,7 +128,7 @@ export class OrderService {
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
-  public async acceptOrder(orderId:number): Promise<void> {
+  public async acceptOrder(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
@@ -131,9 +138,11 @@ export class OrderService {
     }
     order.status = OrderStatus.PENDING;
     await this.orderRepository.save(order);
+
+    await this.sendMessage(order);
   }
 
-  public async rejectOrder(orderId:number): Promise<void> {
+  public async rejectOrder(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
@@ -143,9 +152,11 @@ export class OrderService {
     }
     order.status = OrderStatus.CANCELED;
     await this.orderRepository.save(order);
+
+    await this.sendMessage(order);
   }
 
-  public async changeStatus(status:OrderStatus, orderId:number): Promise<void> {
+  public async changeStatus(status: OrderStatus, orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
@@ -153,11 +164,15 @@ export class OrderService {
 
     order.status = status;
     await this.orderRepository.save(order);
+
+    await this.sendMessage(order);
   }
 
-  public async getChefOrders(restaurantId:number, status?:ChefOrderStatus): Promise<Order[]> {
+  public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
-    const enumValues = Object.values(ChefOrderStatus).map((value:string) => `'${value}'`).join(', ');
+    const enumValues = Object.values(ChefOrderStatus)
+      .map((value: string) => `'${value}'`)
+      .join(', ');
 
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
@@ -187,7 +202,7 @@ export class OrderService {
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
-  public async chefChangeStatus(status:OrderStatus, orderId:number): Promise<void> {
+  public async chefChangeStatus(status: OrderStatus, orderId: number): Promise<void> {
     if (!this.chefStatus.includes(status)) {
       throw new BadRequestException('Передан недопустимый статус');
     }
@@ -198,9 +213,11 @@ export class OrderService {
 
     order.status = status;
     await this.orderRepository.save(order);
+
+    await this.sendMessage(order);
   }
 
-  public async getOrder(orderId:number): Promise<GetOrder> {
+  public async getOrder(orderId: number): Promise<GetOrder> {
     const [order] = <GetOrder[]> await this.orderRepository.manager.query(
       `
       SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
@@ -222,5 +239,17 @@ export class OrderService {
       [orderId],
     );
     return order;
+  }
+
+  private async sendMessage(order:Order):Promise<void> {
+    const chats = <Pick<OrderTrackEntity, 'tgChatId'>[]> await this.orderTrackEntity.find({ where: { orderId: order.id } });
+    const tgChatsId = _.map(chats, 'tgChatId');
+
+    const orderEvent = new OrderEvent();
+    orderEvent.orderId = order.id;
+    orderEvent.status = order.status;
+    orderEvent.tgChatsId = tgChatsId;
+
+    this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 }
