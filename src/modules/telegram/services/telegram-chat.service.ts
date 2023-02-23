@@ -11,7 +11,7 @@ export class TelegramChatService {
     private readonly tgChatRepository:Repository<TgChatEntity>,
   ) {}
 
-  public async create(tgChatId:number):Promise<void> {
+  public async findOrCreate(tgChatId:number):Promise<void> {
     let tgChat = await this.tgChatRepository.findOneBy({ tgChatId });
     if (!tgChat) {
       tgChat = await this.tgChatRepository.save({ tgChatId });

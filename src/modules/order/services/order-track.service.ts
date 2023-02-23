@@ -11,7 +11,7 @@ export class OrderTrackService {
     private readonly orderTrackRepository: Repository<OrderTrackEntity>,
   ) {}
 
-  public async create(orderId:number, tgChatId:number):Promise<void> {
+  public async findOrCreate(orderId:number, tgChatId:number):Promise<void> {
     const orderTrack = await this.orderTrackRepository.findOne({ where: { orderId, tgChatId } });
     if (!orderTrack) {
       await this.orderTrackRepository.save({ orderId, tgChatId });

@@ -15,7 +15,7 @@ import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.bo
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
-import { OrderEvent } from '../events/order.event';
+import { OrderStatusChangeEvent } from '../events/order-status-change/order-status-change.event';
 import type { TgLink } from '../interfaces/order-track.interface';
 import type { GetOrder, Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
@@ -137,7 +137,7 @@ export class OrderService {
     order.status = OrderStatus.PENDING;
     await this.orderRepository.save(order);
 
-    const orderEvent = new OrderEvent(order.id, order.status);
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
     this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
@@ -152,7 +152,7 @@ export class OrderService {
     order.status = OrderStatus.CANCELED;
     await this.orderRepository.save(order);
 
-    const orderEvent = new OrderEvent(order.id, order.status);
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
     this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
@@ -161,19 +161,19 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
     }
-
+    if (order.status === OrderStatus.COMPLETED) {
+      throw new BadRequestException('Заказ уже завершен');
+    }
     order.status = status;
     await this.orderRepository.save(order);
 
-    const orderEvent = new OrderEvent(order.id, order.status);
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
     this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
   public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
-    const enumValues = Object.values(ChefOrderStatus)
-      .map((value: string) => `'${value}'`)
-      .join(', ');
+    const enumValues = Object.values(ChefOrderStatus);
 
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
@@ -189,16 +189,21 @@ export class OrderService {
       ON op."productId" = p.id
       LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
       ON o.id = oa."orderId"
+      WHERE o."restaurantId"=$1 
     `;
-    let whereClause = `WHERE o."restaurantId"=$1 
-                      AND o.status IN (${enumValues} ) `;
+    let whereClause:string;
+
     if (status) {
       if (!this.chefStatus.includes(status)) {
         throw new BadRequestException('Такого статуса не существует');
       }
-      whereClause += 'AND o.status = $2 ';
+      whereClause = ' AND o.status IN ($2) ';
       params.push(status);
+    } else {
+      whereClause = ' AND o.status IN ($2,$3,$4) ';
+      params.push(...enumValues);
     }
+
     query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details, u.id`;
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
@@ -215,7 +220,7 @@ export class OrderService {
     order.status = status;
     await this.orderRepository.save(order);
 
-    const orderEvent = new OrderEvent(order.id, order.status);
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
     this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
