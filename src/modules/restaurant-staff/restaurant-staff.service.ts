@@ -30,12 +30,15 @@ export class RestaurantStaffService {
   public async getAll(restaurantId: number, role?: RestaurantStaffRole): Promise<GetStaff[]> {
     let query = `
       SELECT u.id,u.name,u.surname, u.email, u.phone, u.role,
+        rs."photoId", p.thumbnails,
         sr."restaurantStaffId"
         FROM public.${TableName.USER} as u 
         INNER JOIN ${TableName.RESTAURANT_STAFF} as rs
         ON u.id=rs."userId"
         INNER JOIN ${TableName.STAFF_ROLE} as sr
         ON rs.id= sr."restaurantStaffId" 
+        LEFT JOIN ${TableName.PHOTO} as p
+        on rs."photoId"=p.id
     `;
     let whereClause = 'WHERE sr."restaurantId"=$1 ';
     const params: Array<number | RestaurantStaffRole> = [restaurantId];
