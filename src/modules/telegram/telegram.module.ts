@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { OrderTrackEntity } from '../order/entities/order-track.entity';
-import { OrderModule } from '../order/order.module';
 import { TgChatEntity } from './entities/tg-chat.entity';
-import { TelegramService } from './telegram.service';
-import { TelegramUpdate } from './telegram.update';
+import { TelegramChatService } from './services/telegram-chat.service';
+import { TelegramService } from './services/telegram.service';
 
 @Module({
-  imports: [OrderModule, TypeOrmModule.forFeature([TgChatEntity, OrderTrackEntity])],
-  providers: [TelegramUpdate, TelegramService],
+  imports: [TypeOrmModule.forFeature([TgChatEntity])],
+  providers: [TelegramService, TelegramChatService],
+  exports: [TelegramChatService],
 
 })
 export class TelegramModule {

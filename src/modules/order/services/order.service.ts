@@ -8,10 +8,10 @@ import { TableName } from '@/common/enums/table';
 import { UtilService } from '@/common/providers/util.service';
 import { ProductEntity } from '@/modules/product/entitites/product.entity';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
+import { EventType } from '@/modules/telegram/enums/event-type.enum';
 
 import { UserService } from '../../user/user.service';
 import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.body.dto';
-import { OrderTrackEntity } from '../entities/order-track.entity';
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
@@ -27,8 +27,6 @@ export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
-    @InjectRepository(OrderTrackEntity)
-    private readonly orderTrackEntity: Repository<OrderTrackEntity>,
     private readonly userService: UserService,
     private readonly orderProductService: OrderProductService,
     private readonly orderAddressService: OrderAddressService,
@@ -139,7 +137,8 @@ export class OrderService {
     order.status = OrderStatus.PENDING;
     await this.orderRepository.save(order);
 
-    await this.sendMessage(order);
+    const orderEvent = new OrderEvent(order.id, order.status);
+    this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
   public async rejectOrder(orderId: number): Promise<void> {
@@ -153,7 +152,8 @@ export class OrderService {
     order.status = OrderStatus.CANCELED;
     await this.orderRepository.save(order);
 
-    await this.sendMessage(order);
+    const orderEvent = new OrderEvent(order.id, order.status);
+    this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
   public async changeStatus(status: OrderStatus, orderId: number): Promise<void> {
@@ -165,7 +165,8 @@ export class OrderService {
     order.status = status;
     await this.orderRepository.save(order);
 
-    await this.sendMessage(order);
+    const orderEvent = new OrderEvent(order.id, order.status);
+    this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 
   public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
@@ -214,7 +215,8 @@ export class OrderService {
     order.status = status;
     await this.orderRepository.save(order);
 
-    await this.sendMessage(order);
+    const orderEvent = new OrderEvent(order.id, order.status);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
   public async getOrder(orderId: number): Promise<GetOrder> {
@@ -239,17 +241,5 @@ export class OrderService {
       [orderId],
     );
     return order;
-  }
-
-  private async sendMessage(order:Order):Promise<void> {
-    const chats = <Pick<OrderTrackEntity, 'tgChatId'>[]> await this.orderTrackEntity.find({ where: { orderId: order.id } });
-    const tgChatsId = _.map(chats, 'tgChatId');
-
-    const orderEvent = new OrderEvent();
-    orderEvent.orderId = order.id;
-    orderEvent.status = order.status;
-    orderEvent.tgChatsId = tgChatsId;
-
-    this.eventEmitter.emit('orderStatusChange', orderEvent);
   }
 }

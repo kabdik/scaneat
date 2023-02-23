@@ -1,4 +1,4 @@
-export const statusMessages = {
+export const TELEGRAM_STATUS_MESSAGES = {
   idle: 'Ваш заказ оживает подтверждения',
   canceled: 'Ваш заказ был отклонен',
   pending: 'Ваш заказ был принят',

@@ -73,7 +73,7 @@ import { UserModule } from './modules/user/user.module';
       token: TelegramConfig.TELEGRAM_BOT_TOKEN,
       botName: TelegramConfig.TELEGRAM_BOT_NAME,
       middlewares: [sessionMiddleware],
-      include: [TelegramModule],
+      include: [TelegramModule, OrderModule],
     }),
     // Service Modules
     CommonModule, // Global
