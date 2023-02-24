@@ -1,5 +1,4 @@
-import type { UserRoleType } from '@/modules/user/enums/user-role.enum';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class CreateStaffBodyDto {
   @IsNumber()
   @IsOptional()
@@ -21,7 +20,11 @@ export class CreateStaffBodyDto {
   @IsOptional()
   phone?: string;
 
-  @IsString()
+  @IsBoolean()
   @IsNotEmpty()
-  role!: UserRoleType;
+  isManager!:boolean
+
+  @IsBoolean()
+  @IsNotEmpty()
+  isChef!:boolean
 }

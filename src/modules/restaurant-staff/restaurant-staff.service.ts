@@ -9,11 +9,10 @@ import { RestaurantEntity } from '../restaurant/entities/restaurant.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { UserRoleType } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
-import type { CreateStaffBodyDto } from './dto/create-staff.body.dto';
 import { RestaurantStaffEntity } from './entitites/restaurant-staff.entity';
 import { StaffRoleEntity } from './entitites/staff-role.entity';
 import { RestaurantStaffRole } from './enums/restaurant-staff-role.enum';
-import type { ChangeStaffUser, RestaurantStaff } from './interfaces/restaurant-staff.interface';
+import type { ChangeStaffUserData, CreateStaffUserData, RestaurantStaff } from './interfaces/restaurant-staff.interface';
 import type { GetStaff, RoleData } from './interfaces/staff-role.interface';
 
 @Injectable()
@@ -56,7 +55,7 @@ export class RestaurantStaffService {
     return <Promise<GetStaff[]>> this.staffRoleRepository.manager.query(query, params);
   }
 
-  public async createStaff({ photoId, ...data }: CreateStaffBodyDto, restaurantId: number): Promise<void> {
+  public async createStaff(restaurantId: number, roleData: RoleData, { photoId, ...data }: CreateStaffUserData): Promise<void> {
     return this.restaurantStaffRepository.manager.transaction(async (em: EntityManager) => {
       const restaurant = await em.findOneBy(RestaurantEntity, { id: restaurantId });
       if (!restaurant) {
@@ -65,7 +64,12 @@ export class RestaurantStaffService {
       const user = await this.userService.createUser({ ...data, role: UserRoleType.RESTAURANT_STAFF }, em);
 
       const { id: restaurantStaffId } = await em.save(RestaurantStaffEntity, { userId: user.id, photoId });
-      await em.save(StaffRoleEntity, { restaurantStaffId, restaurantId, role: data.role });
+      if (roleData.isChef) {
+        await em.save(StaffRoleEntity, { restaurantStaffId, restaurantId, role: UserRoleType.CHEF });
+      }
+      if (roleData.isManager) {
+        await em.save(StaffRoleEntity, { restaurantStaffId, restaurantId, role: UserRoleType.MANAGER });
+      }
     });
   }
 
@@ -77,7 +81,12 @@ export class RestaurantStaffService {
     await this.staffRoleRepository.remove(staff);
   }
 
-  public async update(staffId: number, restaurantId: number, roleData:RoleData, { photoId, ...userData }: ChangeStaffUser): Promise<void> {
+  public async update(
+    staffId: number,
+    restaurantId: number,
+    roleData: RoleData,
+    { photoId, ...userData }: ChangeStaffUserData,
+  ): Promise<void> {
     const staff = await this.staffRoleRepository.find({ where: { restaurantId, restaurantStaffId: staffId } });
     if (!staff) {
       throw new NotFoundException('Работника с таким айди у этого ресторана не существует');
@@ -97,12 +106,14 @@ export class RestaurantStaffService {
     await this.restaurantStaffRepository.update(staffId, { photoId });
     await this.userRepository.update(userId, userData);
 
-    const staffRoles = <UserRoleType[]> _.map(staff, 'role');
+    const staffRoles = <UserRoleType[]>_.map(staff, 'role');
+
     if (roleData.isChef && !staffRoles.includes(UserRoleType.CHEF)) {
       await this.staffRoleRepository.save({ restaurantStaffId: staffId, restaurantId, role: UserRoleType.CHEF });
     } else if (!roleData.isChef && staffRoles.includes(UserRoleType.CHEF)) {
       await this.staffRoleRepository.delete({ restaurantStaffId: staffId, role: UserRoleType.CHEF });
     }
+
     if (roleData.isManager && !staffRoles.includes(UserRoleType.MANAGER)) {
       await this.staffRoleRepository.save({ restaurantStaffId: staffId, restaurantId, role: UserRoleType.MANAGER });
     } else if (!roleData.isManager && staffRoles.includes(UserRoleType.MANAGER)) {

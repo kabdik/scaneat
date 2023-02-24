@@ -5,9 +5,17 @@ export interface RestaurantStaff extends BaseEntity {
   photoId: number | null;
 }
 
-export interface ChangeStaffUser {
+export interface ChangeStaffUserData {
   photoId: number;
   name: string;
   surname: string;
   phone: string;
+}
+
+export interface CreateStaffUserData {
+  photoId?: number;
+  name: string;
+  surname: string;
+  email: string;
+  phone?: string;
 }

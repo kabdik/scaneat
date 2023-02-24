@@ -23,10 +23,10 @@ export class RestaurantStaffController {
 
   @Post('')
   public async createStaff(
-    @Body() data: CreateStaffBodyDto,
+    @Body() { isChef, isManager, ...data }: CreateStaffBodyDto,
       @Param('restaurantId') restaurantId: number,
   ): Promise<void> {
-    return this.restaurantStaffService.createStaff(data, restaurantId);
+    return this.restaurantStaffService.createStaff(restaurantId, { isChef, isManager }, data);
   }
 
   @Delete(':staffId')
