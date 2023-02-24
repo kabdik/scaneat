@@ -1,19 +1,20 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import _ from 'lodash';
+import { EntityManager, Not, Repository } from 'typeorm';
 
 import { TableName } from '@/common/enums/table';
 
 import { RestaurantEntity } from '../restaurant/entities/restaurant.entity';
 import { UserEntity } from '../user/entities/user.entity';
+import { UserRoleType } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
-import type { ChangeStaffBodyDto } from './dto/change-staff.body.dto';
 import type { CreateStaffBodyDto } from './dto/create-staff.body.dto';
 import { RestaurantStaffEntity } from './entitites/restaurant-staff.entity';
 import { StaffRoleEntity } from './entitites/staff-role.entity';
 import { RestaurantStaffRole } from './enums/restaurant-staff-role.enum';
-import type { RestaurantStaff } from './interfaces/restaurant-staff.interface';
-import type { GetStaff } from './interfaces/staff-role.interface';
+import type { ChangeStaffUser, RestaurantStaff } from './interfaces/restaurant-staff.interface';
+import type { GetStaff, RoleData } from './interfaces/staff-role.interface';
 
 @Injectable()
 export class RestaurantStaffService {
@@ -61,7 +62,7 @@ export class RestaurantStaffService {
       if (!restaurant) {
         throw new BadRequestException('Такого ресторана не существует');
       }
-      const user = await this.userService.createUser(data, em);
+      const user = await this.userService.createUser({ ...data, role: UserRoleType.RESTAURANT_STAFF }, em);
 
       const { id: restaurantStaffId } = await em.save(RestaurantStaffEntity, { userId: user.id, photoId });
       await em.save(StaffRoleEntity, { restaurantStaffId, restaurantId, role: data.role });
@@ -76,16 +77,36 @@ export class RestaurantStaffService {
     await this.staffRoleRepository.remove(staff);
   }
 
-  public async change(staffId: number, restaurantId: number, { photoId, ...userData }: ChangeStaffBodyDto): Promise<void> {
-    const staff = await this.staffRoleRepository.findOne({ where: { restaurantId, restaurantStaffId: staffId } });
+  public async update(staffId: number, restaurantId: number, roleData:RoleData, { photoId, ...userData }: ChangeStaffUser): Promise<void> {
+    const staff = await this.staffRoleRepository.find({ where: { restaurantId, restaurantStaffId: staffId } });
     if (!staff) {
       throw new NotFoundException('Работника с таким айди у этого ресторана не существует');
+    }
+    if (!roleData.isChef && !roleData.isManager) {
+      throw new BadRequestException('Either isChef or isManager must be true');
     }
     const { userId } = <Pick<RestaurantStaff, 'userId'>> await this.restaurantStaffRepository.findOne({
       where: { id: staffId },
       select: ['userId'],
     });
+
+    const user = await this.userRepository.findOne({ where: { phone: userData.phone, id: Not(userId) } });
+    if (user) {
+      throw new BadRequestException('Пользователь с таким номером телефона уже существует');
+    }
     await this.restaurantStaffRepository.update(staffId, { photoId });
     await this.userRepository.update(userId, userData);
+
+    const staffRoles = <UserRoleType[]> _.map(staff, 'role');
+    if (roleData.isChef && !staffRoles.includes(UserRoleType.CHEF)) {
+      await this.staffRoleRepository.save({ restaurantStaffId: staffId, restaurantId, role: UserRoleType.CHEF });
+    } else if (!roleData.isChef && staffRoles.includes(UserRoleType.CHEF)) {
+      await this.staffRoleRepository.delete({ restaurantStaffId: staffId, role: UserRoleType.CHEF });
+    }
+    if (roleData.isManager && !staffRoles.includes(UserRoleType.MANAGER)) {
+      await this.staffRoleRepository.save({ restaurantStaffId: staffId, restaurantId, role: UserRoleType.MANAGER });
+    } else if (!roleData.isManager && staffRoles.includes(UserRoleType.MANAGER)) {
+      await this.staffRoleRepository.delete({ restaurantStaffId: staffId, role: UserRoleType.MANAGER });
+    }
   }
 }

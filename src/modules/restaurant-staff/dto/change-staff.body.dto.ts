@@ -1,19 +1,28 @@
-import {  IsNumber, IsOptional, IsString } from 'class-validator';
+import {  IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+
 export class ChangeStaffBodyDto {
   @IsNumber()
-  @IsOptional()
-  photoId?: number;
+  @IsNotEmpty()
+  photoId!: number;
 
   @IsString()
-  @IsOptional()
-  name?: string;
+  @IsNotEmpty()
+  name!: string;
 
   @IsString()
-  @IsOptional()
-  surname?: string;
+  @IsNotEmpty()
+  surname!: string;
 
   @IsString()
-  @IsOptional()
-  phone?: string;
+  @IsNotEmpty()
+  phone!: string;
 
+  @IsBoolean()
+  @IsNotEmpty()
+  isManager!:boolean
+
+  @IsBoolean()
+  @IsNotEmpty()
+  isChef!:boolean
 }

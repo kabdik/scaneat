@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 
 import { RestauranOwner } from '@/common/decorators/restoran-owner.decorator';
 
@@ -37,12 +37,12 @@ export class RestaurantStaffController {
     return this.restaurantStaffService.delete(staffId, restaurantId);
   }
 
-  @Patch(':staffId')
-  public async change(
+  @Put(':staffId')
+  public async update(
     @Param('staffId') staffId:number,
       @Param('restaurantId') restaurantId:number,
-      @Body() data:ChangeStaffBodyDto,
+      @Body() { isChef, isManager, ...data }:ChangeStaffBodyDto,
   ):Promise<void> {
-    return this.restaurantStaffService.change(staffId, restaurantId, data);
+    return this.restaurantStaffService.update(staffId, restaurantId, { isChef, isManager }, data);
   }
 }

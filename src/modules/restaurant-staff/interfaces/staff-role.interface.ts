@@ -8,4 +8,9 @@ export interface StaffRole extends BaseEntity {
   restaurantId: number;
 }
 
+export interface RoleData {
+  isManager:boolean;
+  isChef:boolean;
+}
+
 export interface GetStaff extends User, StaffRole {}
