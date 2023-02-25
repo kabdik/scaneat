@@ -138,7 +138,7 @@ export class OrderService {
     await this.orderRepository.save(order);
 
     const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
-    this.eventEmitter.emit('orderStatusChange', orderEvent);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
   public async rejectOrder(orderId: number): Promise<void> {
@@ -153,7 +153,7 @@ export class OrderService {
     await this.orderRepository.save(order);
 
     const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
-    this.eventEmitter.emit('orderStatusChange', orderEvent);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
   public async changeStatus(status: OrderStatus, orderId: number): Promise<void> {
@@ -168,13 +168,14 @@ export class OrderService {
     await this.orderRepository.save(order);
 
     const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
-    this.eventEmitter.emit('orderStatusChange', orderEvent);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
   public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
-    const enumValues = Object.values(ChefOrderStatus);
-
+    const enumValues = Object.values(ChefOrderStatus)
+      .map((value: string) => `'${value}'`)
+      .join(', ');
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
       json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
@@ -195,13 +196,12 @@ export class OrderService {
 
     if (status) {
       if (!this.chefStatus.includes(status)) {
-        throw new BadRequestException('Такого статуса не существует');
+        throw new BadRequestException('Данный статус неприемлим');
       }
       whereClause = ' AND o.status IN ($2) ';
       params.push(status);
     } else {
-      whereClause = ' AND o.status IN ($2,$3,$4) ';
-      params.push(...enumValues);
+      whereClause = ` AND o.status IN (${enumValues}) `;
     }
 
     query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details, u.id`;

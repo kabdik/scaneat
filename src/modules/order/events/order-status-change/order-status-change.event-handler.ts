@@ -15,7 +15,7 @@ import { OrderTrackEntity } from '../../entities/order-track.entity';
 import type { OrderStatusChangeEvent } from './order-status-change.event';
 
 @Injectable()
-export class OrderStatusChangeListener {
+export class OrderStatusChangeEventHandler {
   constructor(
     @InjectRepository(OrderTrackEntity)
     private readonly orderTrackRepository:Repository<OrderTrackEntity>,
@@ -29,12 +29,11 @@ export class OrderStatusChangeListener {
     const tgChatIds = _.map(chats, 'tgChatId');
     const message = `Заказ #${event.orderId}\n${TELEGRAM_STATUS_MESSAGES[event.status]}`;
 
-    try {
-      tgChatIds?.forEach(async (tgChatId:number) => {
-        await this.bot.telegram.sendMessage(tgChatId, message);
+    const sendMessagePromises = tgChatIds.map(async (tgChatId:number) => this.bot.telegram.sendMessage(tgChatId, message));
+
+    Promise.all(sendMessagePromises)
+      .catch((error:Error) => {
+        this.client.instance().captureException(error);
       });
-    } catch (error) {
-      this.client.instance().captureException(error);
-    }
   }
 }
