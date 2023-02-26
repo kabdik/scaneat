@@ -29,9 +29,10 @@ export class RestaurantStaffService {
 
   public async getAll(restaurantId: number, role?: RestaurantStaffRole): Promise<GetStaff[]> {
     let query = `
-      SELECT u.id,u.name,u.surname, u.email, u.phone, u.role,
-        rs."photoId", p.thumbnails,
-        sr."restaurantStaffId"
+      SELECT u.id,u.name,u.surname, u.email, u.phone, 
+        json_agg(sr.role) as roles,
+        rs.id as "restaurantStaffId",
+        p."originalUrl",p.thumbnails
         FROM public.${TableName.USER} as u 
         INNER JOIN ${TableName.RESTAURANT_STAFF} as rs
         ON u.id=rs."userId"
@@ -47,11 +48,11 @@ export class RestaurantStaffService {
         throw new BadRequestException('Неправильное значение роли');
       }
 
-      whereClause += 'AND sr.role=$2';
+      whereClause += 'AND sr.role=$2 ';
       params.push(role);
     }
-
-    query += whereClause;
+    const groupByClause = 'GROUP BY u.id, p.id, rs.id';
+    query = query + whereClause + groupByClause;
     return <Promise<GetStaff[]>> this.staffRoleRepository.manager.query(query, params);
   }
 
