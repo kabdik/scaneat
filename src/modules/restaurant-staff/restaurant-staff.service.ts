@@ -32,7 +32,7 @@ export class RestaurantStaffService {
       SELECT u.id,u.name,u.surname, u.email, u.phone, 
         json_agg(sr.role) as roles,
         rs.id as "restaurantStaffId",
-        p."originalUrl",p.thumbnails
+        p."originalUrl",p.thumbnails, p.id as "photoId"
         FROM public.${TableName.USER} as u 
         INNER JOIN ${TableName.RESTAURANT_STAFF} as rs
         ON u.id=rs."userId"
