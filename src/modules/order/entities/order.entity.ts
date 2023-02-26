@@ -27,7 +27,7 @@ export class OrderEntity extends BaseEntity implements Order {
   @Column('enum', { enum: OrderType })
   type!: OrderType;
 
-  @Column('varchar')
+  @Column('varchar', { nullable: true })
   code!: string;
 
   @Column('text', { nullable: true })
