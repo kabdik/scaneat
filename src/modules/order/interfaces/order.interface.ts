@@ -8,17 +8,21 @@ import type { OrderType } from '../enum/order-type.enum';
 export interface Order extends BaseEntity {
   userId: number;
   restaurantId: number;
-  profit:number;
-  total:number;
-  description:string | null;
-  status:OrderStatus;
-  type:OrderType;
+  profit: number;
+  total: number;
+  description: string | null;
+  status: OrderStatus;
+  type: OrderType;
+  code: string;
 }
 
 export interface GetOrder extends Order {
-  products:OrderProduct[];
+  products: OrderProduct[];
   user: OrderUser;
-  address:string;
-  addressDetails:string;
+  address: string;
+  addressDetails: string;
+}
 
+export interface OrderCode {
+  code:string;
 }

@@ -23,7 +23,10 @@ export class OrderAddressEntity extends BaseEntity implements OrderAddress{
     @JoinColumn({name:'cityId'})
     city?:CityEntity
 
-    @ManyToOne(() => OrderEntity)
+    @ManyToOne(() => OrderEntity,{
+        onDelete:'CASCADE',
+        onUpdate:'CASCADE'
+    })
     @JoinColumn({name:'orderId'})
     order?:OrderEntity
 }
