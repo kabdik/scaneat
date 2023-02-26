@@ -37,7 +37,7 @@ export class OrderUpdate {
     await this.telegramChatService.findOrCreate(tgChatId);
     await this.orderTrackService.findOrCreate(orderId, tgChatId);
 
-    const order = await this.orderService.getOrder(orderId);
+    const order = await this.orderService.getTgOrder(orderId);
     await ctx.reply('Саламалейкум кожаный');
     const orderDetails = order.products.map(
       (product: OrderProduct) => `${product.name}\n` + `Количество: ${product.quantity}\n` + `Цена(1шт): ${product.price}тг` + '\n',

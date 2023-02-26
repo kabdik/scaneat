@@ -17,7 +17,7 @@ import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
 import { OrderStatusChangeEvent } from '../events/order-status-change/order-status-change.event';
 import type { TgLink } from '../interfaces/order-track.interface';
-import type { GetOrder, Order } from '../interfaces/order.interface';
+import type { GetOrder, Order, OrderCode } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
 import { OrderProductService } from './order-product.service';
 
@@ -34,7 +34,16 @@ export class OrderService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<TgLink> {
+  public async getOne(code:string):Promise<TgLink> {
+    const order = await this.orderRepository.findOneBy({ code });
+    if (!order) {
+      throw new NotFoundException('данный заказ не найден');
+    }
+
+    return { tgLink: this.utilService.generateTgLink(order.id), status: order.status };
+  }
+
+  public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number):Promise<OrderCode> {
     return this.orderRepository.manager.transaction(async (em: EntityManager) => {
       const recalculatedTotal = await this.recalculateTotal(data.products, em);
 
@@ -46,7 +55,7 @@ export class OrderService {
 
       const client = await this.userService.createClient({ name, phone }, em);
 
-      const order = <Order> await em.save(OrderEntity, {
+      const order = <Order> em.create(OrderEntity, {
         total: recalculatedTotal,
         profit,
         userId: client.id,
@@ -54,6 +63,9 @@ export class OrderService {
         type: data.type,
         description: data.description,
       });
+
+      order.code = Buffer.from(`${order.id}`, 'binary').toString('base64');
+      await em.save(OrderEntity, order);
 
       await this.orderProductService.createOrderProduct(order.id, data.products, em);
 
@@ -64,7 +76,8 @@ export class OrderService {
         });
         await this.orderAddressService.createOrderAddress(order.id, { address: data.address, details: data.details, cityId }, em);
       }
-      return { tgLink: this.utilService.generateTgLink(order.id) };
+
+      return { code: order.code };
     });
   }
 
@@ -226,7 +239,7 @@ export class OrderService {
     this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
-  public async getOrder(orderId: number): Promise<GetOrder> {
+  public async getTgOrder(orderId: number): Promise<GetOrder> {
     const [order] = <GetOrder[]> await this.orderRepository.manager.query(
       `
       SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
