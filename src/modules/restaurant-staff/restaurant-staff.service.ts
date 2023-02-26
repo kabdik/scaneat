@@ -75,7 +75,7 @@ export class RestaurantStaffService {
   }
 
   public async delete(staffId: number, restaurantId: number): Promise<void> {
-    const staff = await this.staffRoleRepository.findOne({ where: { restaurantId, restaurantStaffId: staffId } });
+    const staff = await this.staffRoleRepository.find({ where: { restaurantId, restaurantStaffId: staffId } });
     if (!staff) {
       throw new NotFoundException('Работника с таким айди у этого ресторана не существует');
     }
