@@ -6,12 +6,12 @@ import type { TgLink } from '../interfaces/order-track.interface';
 import type { OrderCode } from '../interfaces/order.interface';
 import { OrderService } from '../services/order.service';
 
-@Controller('restaurant/:restaurantId/order')
+@Controller('')
 export class OrderController {
   constructor(private readonly orderService:OrderService) {}
 
   @ApiOperation({ summary: 'Creating order for client' })
-  @Post('')
+  @Post('restaurant/:restaurantId/order')
   public async createOrder(
     @Body() data:CreateOrderBodyDto,
       @Param('restaurantId') restaurantId:number,
@@ -19,7 +19,7 @@ export class OrderController {
     return this.orderService.createOrder(data, restaurantId);
   }
 
-  @Get(':code')
+  @Get('order/:code')
   public async getOne(@Param('code') code:string):Promise<TgLink> {
     return this.orderService.getOne(code);
   }
