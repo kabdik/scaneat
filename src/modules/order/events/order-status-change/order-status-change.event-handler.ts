@@ -31,7 +31,7 @@ export class OrderStatusChangeEventHandler {
 
     const sendMessagePromises = tgChatIds.map(async (tgChatId:number) => this.bot.telegram.sendMessage(tgChatId, message));
 
-    Promise.all(sendMessagePromises)
+    await Promise.all(sendMessagePromises)
       .catch((error:Error) => {
         this.client.instance().captureException(error);
       });

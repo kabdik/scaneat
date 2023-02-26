@@ -173,9 +173,7 @@ export class OrderService {
 
   public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
-    const enumValues = Object.values(ChefOrderStatus)
-      .map((value: string) => `'${value}'`)
-      .join(', ');
+
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
       json_agg(json_build_object('name',p.name,'price',op.price::varchar,'unitPrice',op."unitPrice"::varchar,'quantity', op.quantity)) as products,
@@ -192,7 +190,10 @@ export class OrderService {
       ON o.id = oa."orderId"
       WHERE o."restaurantId"=$1 
     `;
+
     let whereClause:string;
+    const enumValues = Object.values(ChefOrderStatus);
+    const enumSqlParams = this.utilService.generateSqlParams(enumValues, 2);
 
     if (status) {
       if (!this.chefStatus.includes(status)) {
@@ -201,7 +202,8 @@ export class OrderService {
       whereClause = ' AND o.status IN ($2) ';
       params.push(status);
     } else {
-      whereClause = ` AND o.status IN (${enumValues}) `;
+      whereClause = ` AND o.status IN (${enumSqlParams}) `;
+      params.push(...enumValues);
     }
 
     query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details, u.id`;
