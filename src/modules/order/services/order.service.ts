@@ -1,17 +1,21 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { EntityManager, Repository } from 'typeorm';
 
 import { TableName } from '@/common/enums/table';
 import { UtilService } from '@/common/providers/util.service';
 import { ProductEntity } from '@/modules/product/entitites/product.entity';
 import { RestaurantEntity } from '@/modules/restaurant/entities/restaurant.entity';
+import { EventType } from '@/modules/telegram/enums/event-type.enum';
 
 import { UserService } from '../../user/user.service';
 import type { CreateOrderBodyDto, OrderProductDto } from '../dto/create-order.body.dto';
 import { OrderEntity } from '../entities/order.entity';
 import { ChefOrderStatus, OrderStatus } from '../enum/order-status.enum';
 import { OrderType } from '../enum/order-type.enum';
+import { OrderStatusChangeEvent } from '../events/order-status-change/order-status-change.event';
 import type { TgLink } from '../interfaces/order-track.interface';
 import type { GetOrder, Order } from '../interfaces/order.interface';
 import { OrderAddressService } from './order-address.service';
@@ -19,7 +23,7 @@ import { OrderProductService } from './order-product.service';
 
 @Injectable()
 export class OrderService {
-  private chefStatus:Array<string> = ['pending', 'processing', 'ready'];
+  private chefStatus: Array<string> = ['pending', 'processing', 'ready'];
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
@@ -27,6 +31,7 @@ export class OrderService {
     private readonly orderProductService: OrderProductService,
     private readonly orderAddressService: OrderAddressService,
     private readonly utilService: UtilService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async createOrder({ name, phone, ...data }: CreateOrderBodyDto, restaurantId: number): Promise<TgLink> {
@@ -121,7 +126,7 @@ export class OrderService {
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
-  public async acceptOrder(orderId:number): Promise<void> {
+  public async acceptOrder(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
@@ -131,9 +136,12 @@ export class OrderService {
     }
     order.status = OrderStatus.PENDING;
     await this.orderRepository.save(order);
+
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
-  public async rejectOrder(orderId:number): Promise<void> {
+  public async rejectOrder(orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
@@ -143,21 +151,28 @@ export class OrderService {
     }
     order.status = OrderStatus.CANCELED;
     await this.orderRepository.save(order);
+
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
-  public async changeStatus(status:OrderStatus, orderId:number): Promise<void> {
+  public async changeStatus(status: OrderStatus, orderId: number): Promise<void> {
     const order = await this.orderRepository.findOneBy({ id: orderId });
     if (!order) {
       throw new NotFoundException('Такого заказа не существует');
     }
-
+    if (order.status === OrderStatus.COMPLETED) {
+      throw new BadRequestException('Заказ уже завершен');
+    }
     order.status = status;
     await this.orderRepository.save(order);
+
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
-  public async getChefOrders(restaurantId:number, status?:ChefOrderStatus): Promise<Order[]> {
+  public async getChefOrders(restaurantId: number, status?: ChefOrderStatus): Promise<Order[]> {
     const params: Array<string | number> = [restaurantId];
-    const enumValues = Object.values(ChefOrderStatus).map((value:string) => `'${value}'`).join(', ');
 
     let query = `
     SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
@@ -173,21 +188,29 @@ export class OrderService {
       ON op."productId" = p.id
       LEFT JOIN ${TableName.ORDER_ADDRESS} as oa
       ON o.id = oa."orderId"
+      WHERE o."restaurantId"=$1 
     `;
-    let whereClause = `WHERE o."restaurantId"=$1 
-                      AND o.status IN (${enumValues} ) `;
+
+    let whereClause:string;
+    const enumValues = Object.values(ChefOrderStatus);
+    const enumSqlParams = this.utilService.generateSqlParams(enumValues, 2);
+
     if (status) {
       if (!this.chefStatus.includes(status)) {
-        throw new BadRequestException('Такого статуса не существует');
+        throw new BadRequestException('Данный статус неприемлим');
       }
-      whereClause += 'AND o.status = $2 ';
+      whereClause = ' AND o.status IN ($2) ';
       params.push(status);
+    } else {
+      whereClause = ` AND o.status IN (${enumSqlParams}) `;
+      params.push(...enumValues);
     }
+
     query = `${query + whereClause}GROUP BY o.id, oa.address, oa.details, u.id`;
     return <Order[]> await this.orderRepository.manager.query(query, params);
   }
 
-  public async chefChangeStatus(status:OrderStatus, orderId:number): Promise<void> {
+  public async chefChangeStatus(status: OrderStatus, orderId: number): Promise<void> {
     if (!this.chefStatus.includes(status)) {
       throw new BadRequestException('Передан недопустимый статус');
     }
@@ -198,9 +221,12 @@ export class OrderService {
 
     order.status = status;
     await this.orderRepository.save(order);
+
+    const orderEvent = new OrderStatusChangeEvent(order.id, order.status);
+    this.eventEmitter.emit(EventType.ORDER_STATUS_CHANGE, orderEvent);
   }
 
-  public async getOrder(orderId:number): Promise<GetOrder> {
+  public async getOrder(orderId: number): Promise<GetOrder> {
     const [order] = <GetOrder[]> await this.orderRepository.manager.query(
       `
       SELECT o.id, o.profit, o.total, o.status, o.type, o.description, o."createdAt",
