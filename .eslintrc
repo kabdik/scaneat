@@ -16,7 +16,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
-  "ignorePatterns": ["**/node_modules/**", "dist/**", "src/**/*.entity.ts", "src/**/*.schema.ts","src/**/*.model.ts", "src/**/*.dto.ts", "src/db/**", "bin/*", "src/mongodb/**"],
+  "ignorePatterns": ["**/node_modules/**", "dist/**", "src/**/*.entity.ts", "src/**/*.event.ts", "src/**/*.schema.ts","src/**/*.model.ts", "src/**/*.dto.ts", "src/db/**", "bin/*", "src/mongodb/**"],
   "rules": {
     "linebreak-style": 0 ,
     "class-methods-use-this": "off",

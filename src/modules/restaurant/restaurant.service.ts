@@ -94,8 +94,6 @@ export class RestaurantService {
   }
 
   public async createRestaurant(restaurantData: CreateRestaurantWithOwnerDto, em?: EntityManager): Promise<Restaurant> {
-    console.log(restaurantData);
-
     const entityManager = em || this.restaurantRepository.manager;
 
     if (await entityManager.findOne(RestaurantEntity, { where: { slug: restaurantData.slug } })) {
