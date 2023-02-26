@@ -55,7 +55,7 @@ export class OrderService {
 
       const client = await this.userService.createClient({ name, phone }, em);
 
-      const order = <Order> em.create(OrderEntity, {
+      const order = <Order> await em.save(OrderEntity, {
         total: recalculatedTotal,
         profit,
         userId: client.id,
@@ -64,7 +64,7 @@ export class OrderService {
         description: data.description,
       });
 
-      order.code = Buffer.from(`${order.id}`, 'binary').toString('base64');
+      order.code = Buffer.from(`${order.id}`).toString('base64');
       await em.save(OrderEntity, order);
 
       await this.orderProductService.createOrderProduct(order.id, data.products, em);
